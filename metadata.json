@@ -1,0 +1,6 @@
+{
+  "name": "セキュリティ学級裁判 - 人的セキュリティ70選",
+  "description": "ダンガンロンパ風のサイバー＆ポップな演出で学ぶ、人的セキュリティ対策70選の学級裁判ゲーム。言弾（コトダマ）を装填し、誤った認識を論破せよ！",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

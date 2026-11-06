@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>セキュリティ学級裁判 - 人的セキュリティ70選</title>
+  <meta name="description" content="ダンガンロンパ風のサイバー＆ポップな演出で学ぶ、人的セキュリティ対策70選の学級裁判ゲーム。言弾（コトダマ）を装填し、誤った認識を論破せよ！" />
+  <meta property="og:title" content="セキュリティ学級裁判 - 人的セキュリティ70選" />
+  <meta property="og:description" content="ダンガンロンパ風のサイバー＆ポップな演出で学ぶ、人的セキュリティ対策70選の学級裁判ゲーム。言弾（コトダマ）を装填し、誤った認識を論破せよ！" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@400;600;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --neon-pink: #ff007f;
+      --neon-rose: #e11d48;
+      --cyber-black: #08080d;
+      --panel-dark: #12121e;
+      --panel-darker: #0d0d17;
+      --gold-accent: #fde047;
+      --cyan-accent: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--cyber-black);
+      color: #f1f5f9;
+      font-family: 'Noto Sans JP', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    .font-dela {
+      font-family: 'Dela Gothic One', sans-serif;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Danganronpa Hazard Pattern */
+    .dangan-stripes {
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 0, 127, 0.12),
+        rgba(255, 0, 127, 0.12) 14px,
+        transparent 14px,
+        transparent 28px
+      );
+    }
+
+    .dangan-stripes-subtle {
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, 0.025),
+        rgba(255, 255, 255, 0.025) 16px,
+        transparent 16px,
+        transparent 32px
+      );
+    }
+
+    /* Speedlines */
+    .speedlines {
+      background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255, 0, 127, 0.22) 0deg 4deg,
+        transparent 4deg 8deg
+      );
+    }
+
+    /* Text Glow */
+    .text-glow-pink {
+      text-shadow: 0 0 15px rgba(255, 0, 127, 0.9), 0 0 30px rgba(255, 0, 127, 0.5);
+    }
+
+    .glow-box-pink {
+      box-shadow: 0 0 25px rgba(255, 0, 127, 0.45);
+    }
+
+    /* Animations */
+    @keyframes shake-anim {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      15% { transform: translate(-10px, 8px) rotate(-1.5deg); }
+      30% { transform: translate(12px, -8px) rotate(1.5deg); }
+      45% { transform: translate(-8px, -6px) rotate(-1deg); }
+      60% { transform: translate(9px, 5px) rotate(1deg); }
+      75% { transform: translate(-5px, 3px) rotate(-0.5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    @keyframes damage-flash-anim {
+      0% { background-color: rgba(220, 38, 38, 0.7); }
+      100% { background-color: transparent; }
+    }
+
+    @keyframes pulse-scale {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+
+    .animate-shake {
+      animation: shake-anim 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    .animate-damage {
+      animation: damage-flash-anim 0.5s ease-out;
+    }
+
+    .animate-pulse-btn {
+      animation: pulse-scale 2s infinite ease-in-out;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 0, 127, 0.4);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 0, 127, 0.8);
+    }
+
+    /* UI Layout */
+    .app-container {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .top-bar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: rgba(13, 13, 23, 0.95);
+      border-bottom: 2px solid rgba(255, 0, 127, 0.4);
+      backdrop-filter: blur(8px);
+    }
+
+    .heart-icon {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      fill: #ff007f;
+      filter: drop-shadow(0 0 6px #ff007f);
+      transition: all 0.3s;
+    }
+
+    .heart-icon.lost {
+      fill: #27273a;
+      filter: none;
+      transform: scale(0.85);
+    }
+
+    /* Playing Card Hand (トランプの手札風 扇状配置) Styles */
+    .koto-fan-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 32px 48px 16px; /* 左右に十分なパディング（48px）を確保し、画面端見切れを防止 */
+      min-height: 255px;
+      perspective: 1200px;
+      overflow: visible; /* ホバーや回転時のはみ出しクリップを防止 */
+      position: relative;
+      margin: 0 auto;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .koto-card {
+      width: 185px;
+      height: 226px;
+      flex-shrink: 0;
+      margin: 0 -28px; /* 重なりを適度に強め、5枚が中央エリアにすっきりと収まるように調整 */
+      background: linear-gradient(165deg, #1c1c2e 0%, #12121e 60%, #0a0a14 100%);
+      border: 2px solid #2f2f48;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: left;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.2, 1), box-shadow 0.28s ease, border-color 0.25s ease;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 
+        0 14px 26px -6px rgba(0, 0, 0, 0.85),
+        0 4px 10px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      user-select: none;
+      transform-origin: center bottom;
+    }
+
+    /* レスポンシブ対応：画面幅が狭い場合 */
+    @media (max-width: 860px) {
+      .koto-fan-container {
+        padding: 24px 32px 12px;
+        min-height: 230px;
+      }
+      .koto-card {
+        width: 165px;
+        height: 210px;
+        margin: 0 -28px;
+        padding: 8px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .koto-fan-container {
+        padding: 20px 20px 8px;
+        min-height: 200px;
+        transform: scale(0.92);
+        transform-origin: center bottom;
+      }
+      .koto-card {
+        width: 145px;
+        height: 195px;
+        margin: 0 -30px;
+        padding: 7px;
+      }
+    }
+
+    /* 内側デザインフレーム */
+    .koto-card::before {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      pointer-events: none;
+      transition: border-color 0.2s;
+    }
+
+    /* ホログラフィック光彩スイープ */
+    .koto-card::after {
+      content: "";
+      position: absolute;
+      top: -100%;
+      left: -60%;
+      width: 220%;
+      height: 200%;
+      background: linear-gradient(
+        60deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.08) 45%,
+        rgba(255, 0, 127, 0.18) 50%,
+        rgba(255, 255, 255, 0.08) 55%,
+        transparent 65%
+      );
+      transform: rotate(25deg);
+      pointer-events: none;
+      transition: transform 0.6s ease;
+    }
+
+    /* ホバー時：最前面に浮き出て、まっすぐ回転が戻り前へ飛び出す */
+    .koto-card:hover {
+      z-index: 50 !important;
+      transform: translateY(-22px) rotate(0deg) scale(1.08) !important;
+      border-color: rgba(255, 0, 127, 0.85);
+      background: linear-gradient(165deg, #262640 0%, #171728 60%, #0d0d18 100%);
+      box-shadow: 
+        0 26px 45px -10px rgba(0, 0, 0, 0.95),
+        0 0 35px rgba(255, 0, 127, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .koto-card:hover::after {
+      transform: rotate(25deg) translateY(60%);
+    }
+
+    .koto-card:hover::before {
+      border-color: rgba(255, 0, 127, 0.4);
+    }
+
+    /* 選択・装填中：上部に飛び出し固定 ＆ ネオンピンク発光グロー */
+    .koto-card.active {
+      z-index: 45 !important;
+      transform: translateY(-26px) rotate(0deg) scale(1.08) !important;
+      border-color: var(--neon-pink);
+      background: linear-gradient(165deg, #321330 0%, #1c0a1e 60%, #110613 100%);
+      box-shadow: 
+        0 26px 48px -8px rgba(0, 0, 0, 0.95),
+        0 0 35px rgba(255, 0, 127, 0.9),
+        0 0 70px rgba(255, 0, 127, 0.45),
+        inset 0 0 20px rgba(255, 0, 127, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .koto-card.active::before {
+      border-color: rgba(255, 0, 127, 0.7);
+    }
+
+    /* Big Ronpa Button */
+    .btn-ronpa {
+      background: linear-gradient(90deg, #ff007f, #e11d48, #ff007f);
+      color: #fff;
+      font-family: 'Dela Gothic One', sans-serif;
+      font-size: 1.25rem;
+      padding: 12px 36px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 0 25px rgba(255, 0, 127, 0.7);
+      transition: all 0.2s;
+    }
+
+    .btn-ronpa:hover:not(:disabled) {
+      box-shadow: 0 0 40px rgba(255, 0, 127, 1);
+      transform: scale(1.05);
+    }
+
+    .btn-ronpa:disabled {
+      background: #252538;
+      color: #64748b;
+      box-shadow: none;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- アプリメインルートコンテナ -->
+  <div id="app" class="app-container"></div>
+
+  <!-- フルアプリケーションJavaScript -->
+  <script>
+    // ==========================================
+    // 1. 章（カテゴリ）の分類と全言弾データベース
+    // ==========================================
+    // 章カテゴリ:
+    // ch1: 第1章：基本・認証（基本ルール、パスワード保管、離席ロック）
+    // ch2: 第2章：Web・攻撃対策（ClickFix攻撃、偽修復、生成AI利用ルール）
+    // ch3: 第3章：情報保護・なりすまし（ディープフェイク、バックアップ・同期の違い、オフライン分離）
+    // ch4: 第4章：初動対応（疑い段階での報告、ネットワーク物理隔離）
+
+    const CHAPTERS = {
+      ch1: {
+        id: 'ch1',
+        title: '基本・認証',
+        description: '基本5原則、パスワード運用、端末の物理管理ルール'
+      },
+      ch2: {
+        id: 'ch2',
+        title: 'Web・攻撃対策',
+        description: 'ClickFix攻撃、偽の修復コマンド、生成AIへの情報入力'
+      },
+      ch3: {
+        id: 'ch3',
+        title: '情報保護・なりすまし',
+        description: 'AIディープフェイク、同期とバックアップの違い、オフライン隔離保管'
+      },
+      ch4: {
+        id: 'ch4',
+        title: '初動対応',
+        description: '疑い段階での速やかな報告、端末のネットワーク物理隔離'
+      }
+    };
+
+    // 言弾マスターデータ（全カテゴリ網羅・番号表記を排し、対策タイトルと解説をシンプル・明確に保持）
+    const ALL_KOTODAMA = [
+      // ==========================================
+      // 基本・認証 (ch1)
+      // ==========================================
+      {
+        id: 'koto_1',
+        chapterId: 'ch1',
+        title: '【役職・緊急性を理由に手順を省略しない】',
+        shortTitle: '役職・緊急性で手順を省略しない',
+        desc: '「社長から」「至急」であっても正規の送金・確認手順をスキップすることは厳禁。詐欺の常套句を見抜く鉄則。'
+      },
+      {
+        id: 'koto_2',
+        chapterId: 'ch1',
+        title: '【パスワードは組織が承認した方法で保管する】',
+        shortTitle: '承認された方法でパスワード保管',
+        desc: '平文テキストやメモアプリ保存は端末紛失・マルウェア・同期で一括漏洩。承認されたパスワードマネージャー等を利用。'
+      },
+      {
+        id: 'koto_5',
+        chapterId: 'ch1',
+        title: '【離席時はロックする】',
+        shortTitle: 'わずかな離席時も必ず画面ロック',
+        desc: 'カフェのトイレやオフィス内の短時間離席でも、覗き見やUSB機器の接続、不正送信の格好の標的。Win+L等で即時ロック。'
+      },
+      {
+        id: 'koto_11',
+        chapterId: 'ch1',
+        title: '【多要素認証を設定し不審な承認を拒否する】',
+        shortTitle: '多要素認証の不審な承認通知を拒否',
+        desc: '身に覚えのないログイン通知は攻撃者のパスワード突破サイン（MFA疲弊攻撃）。安易に承認せず即座に拒否し報告。'
+      },
+      {
+        id: 'koto_21',
+        chapterId: 'ch1',
+        title: '【長く、使い回さないパスワードを設定する】',
+        shortTitle: '15文字以上の長さと使い回し禁止',
+        desc: '英数記号の複雑さよりも「15文字以上の十分な長さ」が重要。他サービスとの使い回しは芋づる式被害の元。'
+      },
+      {
+        id: 'koto_22',
+        chapterId: 'ch1',
+        title: '【アカウントの貸し借り・代理ログインをしない】',
+        shortTitle: 'アカウント貸与・代理ログイン禁止',
+        desc: '上司や同僚であってもアカウント共有は誰が操作したかの証跡ログを失わせる。代理承認機能等の正式ルートを利用。'
+      },
+      {
+        id: 'koto_23',
+        chapterId: 'ch1',
+        title: '【端末と状況に応じてセッションを終了する】',
+        shortTitle: '共用端末での明示的なサインアウト',
+        desc: 'ブラウザのタブを閉じるだけではCookieやセッションが残る。共用PC利用後は必ず明示的に「サインアウト」を実行。'
+      },
+      {
+        id: 'koto_29',
+        chapterId: 'ch1',
+        title: '【更新・再起動を期限内に実施する】',
+        shortTitle: 'OS・アプリ更新を先送りせず再起動',
+        desc: 'セキュリティ更新の放置は既知の脆弱性を放置すること。通知を延期し続けず、指定期限内に必ず更新・再起動を実施。'
+      },
+      {
+        id: 'koto_d_1_1',
+        chapterId: 'ch1',
+        title: '【パスワードの使い回しをしない】',
+        shortTitle: '複数サービスでのパスワード使い回し禁止',
+        desc: '1箇所の漏洩で社内システムやクラウドへ芋づる式に侵入される連鎖被害（リスト型攻撃）を阻止する対策。'
+      },
+      {
+        id: 'koto_d_1_2',
+        chapterId: 'ch1',
+        title: '【画面や書類を覗き見されない位置に置く】',
+        shortTitle: 'ショルダーハック（覗き見）防止対策',
+        desc: 'カフェや新幹線など公共の場では覗き見防止フィルターを装着し、背後からの盗撮や視線を遮断する。'
+      },
+
+      // ==========================================
+      // Web・攻撃対策 (ch2)
+      // ==========================================
+      {
+        id: 'koto_3',
+        chapterId: 'ch2',
+        title: '【偽の修復に従ってコマンドを実行しない】',
+        shortTitle: '偽の修復に従ってコマンド実行しない',
+        desc: '「Ctrl+Vで貼り付けてEnter」と促す手口（ClickFix攻撃）等、画面の指示通りに端末コマンドを打つ行為を徹底排除。'
+      },
+      {
+        id: 'koto_4',
+        chapterId: 'ch2',
+        title: '【AIに入力できる情報を事前に決める】',
+        shortTitle: 'AI入力情報の事前ルール策定',
+        desc: '未承認AIへの機密データ・個人情報の投入は外部学習や情報漏洩を招く。組織のガイドラインで定めた情報のみ使用。'
+      },
+      {
+        id: 'koto_14',
+        chapterId: 'ch2',
+        title: '【ブラウザ拡張機能を無断で追加しない】',
+        shortTitle: 'ブラウザ拡張機能の無断追加禁止',
+        desc: '拡張機能は閲覧内容や入力情報を取得する強大な権限を持つ。公式ストアにあっても組織の許可なく勝手に追加しない。'
+      },
+      {
+        id: 'koto_15',
+        chapterId: 'ch2',
+        title: '【オンライン変換・翻訳サービスを無断で使わない】',
+        shortTitle: '未承認オンライン変換ツールの利用禁止',
+        desc: '無料のファイル変換・翻訳サイトにアップロードした文書は、外部サーバに保管・再利用される漏洩リスクがある。'
+      },
+      {
+        id: 'koto_26',
+        chapterId: 'ch2',
+        title: '【ソフトは承認された配布元から導入する】',
+        shortTitle: '野良ソフト禁止・公認配布元から導入',
+        desc: '検索エンジンの広告枠から偽ソフトを落とす被害が多発。業務ソフトは組織が承認した正規配布元からのみ導入する。'
+      },
+      {
+        id: 'koto_27',
+        chapterId: 'ch2',
+        title: '【添付ファイルのマクロや保護を無断で許可しない】',
+        shortTitle: '添付ファイルのマクロ実行を無断許可しない',
+        desc: '「コンテンツの有効化」を押すと悪意あるVBAマクロが実行されマルウェアに感染する。警告を無視して許可してはいけない。'
+      },
+      {
+        id: 'koto_28',
+        chapterId: 'ch2',
+        title: '【AIエージェントの指示と実行内容を確認する】',
+        shortTitle: 'AIエージェントの指示と実行内容を確認',
+        desc: '外部文書に埋め込まれた悪意ある指示（プロンプトインジェクション）による意図しない外部送信等を防ぐため実行前確認が必須。'
+      },
+      {
+        id: 'koto_d_2_1',
+        chapterId: 'ch2',
+        title: '【警告画面が表示されたら操作を中断する】',
+        shortTitle: 'ブラウザ警告時はアクセスを即中断する',
+        desc: '「証明書エラー」「セキュリティ警告」が出た場合は、例外追加や無視をして先に進まず直ちにタブを閉じる。'
+      },
+      {
+        id: 'koto_d_2_2',
+        chapterId: 'ch2',
+        title: '【個人利用のAIアカウントを業務で使用しない】',
+        shortTitle: '法人契約のない個人AIの業務利用禁止',
+        desc: 'データ保護協定のない無料版・個人アカウントは学習に利用されるリスクが高いため、会社指定ツールを徹底。'
+      },
+
+      // ==========================================
+      // 情報保護・なりすまし (ch3)
+      // ==========================================
+      {
+        id: 'koto_6',
+        chapterId: 'ch3',
+        title: '【AI合成音声・映像を本人確認の決め手にしない】',
+        shortTitle: 'AI音声・映像を本人確認の決め手にしない',
+        desc: 'ディープフェイク技術により上司や取引先の顔・声は精巧に模倣可能。振込先変更等はあらかじめ決めた別ルートで確認。'
+      },
+      {
+        id: 'koto_7',
+        chapterId: 'ch3',
+        title: '【同期・共有フォルダとバックアップの違いを理解する】',
+        shortTitle: '同期とバックアップの違いを理解する',
+        desc: 'リアルタイム同期は感染・暗号化・誤削除も即座に同期される。世代管理や変更不可の隔離保管こそが「バックアップ」。'
+      },
+      {
+        id: 'koto_8',
+        chapterId: 'ch3',
+        title: '【バックアップの1つはネットワークから切り離す】',
+        shortTitle: 'バックアップの1つをオフライン分離保管',
+        desc: 'PCに常時マウントされた外付けHDDはランサムウェアの巻き添えで暗号化される。オフライン（エアギャップ）保管が必須。'
+      },
+      {
+        id: 'koto_12',
+        chapterId: 'ch3',
+        title: '【送信先・内容・共有権限を送信前に確認する】',
+        shortTitle: '送信先・内容・共有権限を送信前に確認',
+        desc: '自動補完やメーリングリストへの全員返信による宛先間違いは情報漏洩の主要原因。送信直前に宛先を再点検する。'
+      },
+      {
+        id: 'koto_13',
+        chapterId: 'ch3',
+        title: '【送金・振込先変更は既知の別経路で確認する】',
+        shortTitle: '送金・振込先変更は既知の別経路で確認',
+        desc: '送信元アドレスが本物に見えてもアカウント乗っ取りの可能性がある。必ず過去の契約書等の電話番号で口頭確認。'
+      },
+      {
+        id: 'koto_16',
+        chapterId: 'ch3',
+        title: '【USB・外付け媒体は承認されたものだけを使う】',
+        shortTitle: '承認されたUSB・外付け媒体のみ使用',
+        desc: 'イベント配布や拾得物のUSBメモリにはマルウェアが仕込まれている危険がある。組織指定の暗号化媒体のみを使用。'
+      },
+      {
+        id: 'koto_17',
+        chapterId: 'ch3',
+        title: '【承認済みの通信環境を利用する】',
+        shortTitle: '公衆フリーWi-Fiの無防備利用を禁止',
+        desc: '野良Wi-Fiや暗号化のない通信は盗聴や偽サイト誘導の危険がある。組織指定のVPNや貸与ルーターを使用する。'
+      },
+      {
+        id: 'koto_18',
+        chapterId: 'ch3',
+        title: '【機密書類を裏紙に使わず適切に廃棄する】',
+        shortTitle: '機密書類の裏紙利用禁止・適切な廃棄',
+        desc: '個人情報や機密情報の印刷物は裏紙にせず、専用のシュレッダーや施錠付き溶解回収箱で確実に廃棄する。'
+      },
+      {
+        id: 'koto_20',
+        chapterId: 'ch3',
+        title: '【入館証を貸さず紛失時は失効を依頼する】',
+        shortTitle: '入館証の貸し借り禁止・紛失時即失効',
+        desc: '入館証の貸し借りは不審者の侵入や入退館履歴の不整合を招く。絶対に他人に貸さず、紛失時は即座に失効手続きを行う。'
+      },
+      {
+        id: 'koto_24',
+        chapterId: 'ch3',
+        title: '【ファイル共有は相手を限定し期限を設ける】',
+        shortTitle: 'PPAP廃止とアクセス期限付き共有',
+        desc: '暗号化ZIPとパスワード別送は同一経路奪取に無力。権限を限定し有効期限を設けた安全なクラウドストレージ共有を活用。'
+      },
+      {
+        id: 'koto_25',
+        chapterId: 'ch3',
+        title: '【オンライン会議の画面共有範囲を管理する】',
+        shortTitle: '画面共有は必要ウィンドウに限定',
+        desc: 'デスクトップ全画面の共有はチャット通知や他タブの機密が映り込む事故を起こす。事前に通知を切り特定ウィンドウのみ共有。'
+      },
+      {
+        id: 'koto_30',
+        chapterId: 'ch3',
+        title: '【承認済みの通信環境とVPNを利用する】',
+        shortTitle: '公共ネットワーク利用時のVPN必須化',
+        desc: 'カフェ等のフリーWi-FiはHTTPSであっても偽AP等の盗聴リスクがある。指定VPNや安全な公認回線を利用する。'
+      },
+      {
+        id: 'koto_31',
+        chapterId: 'ch3',
+        title: '【公共の場所で機密の会話をしない】',
+        shortTitle: '新幹線やカフェでの機密会話禁止',
+        desc: 'イヤホンをしていても自分の発言音声は周囲に筒抜け。新幹線・飲食店・移動中の電話での機密・顧客情報通話は厳禁。'
+      },
+      {
+        id: 'koto_32',
+        chapterId: 'ch3',
+        title: '【共連れを防ぎ各自で認証する】',
+        shortTitle: 'セキュリティゲートの共連れ防止',
+        desc: '後ろからついてくる未認証者の侵入を許さない。同僚であっても各自でのカード認証と、正規の受付案内手順を徹底する。'
+      },
+      {
+        id: 'koto_33',
+        chapterId: 'ch3',
+        title: '【SNSへの業務情報の公開を管理する】',
+        shortTitle: '社内写真のSNS投稿禁止・映り込み管理',
+        desc: '画像拡大やAI解析からPC画面や社員証、勤務実態が特定される。社内での不用意な撮影や業務情報のSNS公開は禁止。'
+      },
+      {
+        id: 'koto_34',
+        chapterId: 'ch3',
+        title: '【3-2-1ルールで複数の場所に分けて保管する】',
+        shortTitle: '3-2-1ルールによる多重バックアップ',
+        desc: '3つのデータ・2種以上の異なる媒体・1つは遠隔地保管。同一機器内コピーだけではハードウェア故障で同時に失われる。'
+      },
+      {
+        id: 'koto_d_3_1',
+        chapterId: 'ch3',
+        title: '【バックアップが復元可能か定期的にテストする】',
+        shortTitle: 'バックアップのリストア定期検証',
+        desc: 'バックアップデータが破損していたり復号キーが合わない事故を防ぐため、定期的に復元テストを実施する。'
+      },
+
+      // ==========================================
+      // 初動対応 (ch4)
+      // ==========================================
+      {
+        id: 'koto_9',
+        chapterId: 'ch4',
+        title: '【疑いの段階で、速やかに報告する】',
+        shortTitle: '疑いの段階で速やかに報告',
+        desc: '報告の遅れは被害を拡大させる。「怒られるのが怖い」「勘違いかも」と確証を待たず、疑いの段階で速やかに報告。'
+      },
+      {
+        id: 'koto_10',
+        chapterId: 'ch4',
+        title: '【感染が疑われる端末をネットワークから隔離する】',
+        shortTitle: '感染疑い端末をネットから物理隔離',
+        desc: '再起動はメモリ上の証拠を消しウイルスの自動実行を助ける。まずはLANケーブル抜去やWi-Fi切断でネットワークから隔離。'
+      },
+      {
+        id: 'koto_19',
+        chapterId: 'ch4',
+        title: '【認証情報漏洩の疑いは安全な端末から変更する】',
+        shortTitle: '感染疑い端末からパスワードを変更しない',
+        desc: 'マルウェア感染やキーロガー侵入が疑われる端末から変更すると新パスワードも即座に盗まれる。必ず別の安全な端末から変更。'
+      },
+      {
+        id: 'koto_d_4_1',
+        chapterId: 'ch4',
+        title: '【自己判断で端末の再起動や初期化を行わない】',
+        shortTitle: '自己判断で端末再起動や初期化をしない',
+        desc: '電源を切ったり再起動するとフォレンジック調査の揮発性メモリ証拠が消失し、被害範囲の特定が不可能になる。'
+      },
+      {
+        id: 'koto_d_4_2',
+        chapterId: 'ch4',
+        title: '【インシデント連絡窓口を普段から把握しておく】',
+        shortTitle: '緊急連絡窓口（情シス・CSIRT）の把握',
+        desc: '有事の際に慌てて調べるのではなく、緊急連絡先を自席メモや緊急カードとして手元に常備しておく。'
+      },
+      {
+        id: 'koto_d_4_3',
+        chapterId: 'ch4',
+        title: '【証拠保全のため不審な画面の写真を撮る】',
+        shortTitle: '脅迫文やエラー画面をスマホ等で撮影記録',
+        desc: '画面が消滅したり上書きされる前に、表示された脅迫文やエラーメッセージ、URLを確実にスマートフォン等で記録する。'
+      }
+    ];
+
+    // 全35裁判シナリオ（人的セキュリティ対策70選 準拠・重複なし）
+    const SCENARIOS = [
+      {
+        id: 1,
+        chapterId: 'ch1',
+        theme: '全員で共有する基本ルール',
+        suspect: '慌てる経理担当',
+        title: '超高校級の送金デスク',
+        quote: '「急ぎの案件だし社長からのチャット指示だから、送金手順を飛ばしてすぐ振り込んでも問題ないよね！」',
+        contradiction: '送金手順を飛ばしてすぐ振り込んでも問題ない',
+        correctKotodamaId: 'koto_1',
+        correctKotodamaTitle: '【役職・緊急性を理由に手順を省略しない】',
+        explanation: '役職や緊急性を理由に確認手順を省略させるのは詐欺（ビジネスメール詐欺・BEC）の典型です。手順通りに確認することが重要です。',
+        threat: '「社長から急ぎの送金指示」は最も被害額の大きいサイバー詐欺の手口です。正規の二重チェックや電話確認プロトコルを徹底しましょう。'
+      },
+      {
+        id: 2,
+        chapterId: 'ch1',
+        theme: 'パスワード保管',
+        suspect: '面倒くさがりの新入社員',
+        title: '超高校級の効率厨',
+        quote: '「複雑なパスワードを覚えるのは大変だから、スマホのメモ帳アプリに平文で全部保存してあるよ！」',
+        contradiction: 'スマホのメモ帳アプリに平文で全部保存してある',
+        correctKotodamaId: 'koto_2',
+        correctKotodamaTitle: '【パスワードは組織が承認した方法で保管する】',
+        explanation: '平文のメモ帳保存は感染や同期で一括漏洩します。組織指定のパスワードマネージャー等を使いましょう。',
+        threat: '暗号化されていない平文メモは、不正アプリによる読み取りや、クラウドアカウント乗っ取り時にすべての重要パスワードが一網打尽に奪われます。'
+      },
+      {
+        id: 3,
+        chapterId: 'ch2',
+        theme: '偽サイト・コマンド実行（ClickFix攻撃）',
+        suspect: '素直すぎるアシスタント',
+        title: '超高校級の指示待ち人間',
+        quote: '「画面が固まったから、画面の指示通りPowerShellに修復コマンドを貼り付けて実行したよ！」',
+        contradiction: '画面の指示通りPowerShellに修復コマンドを貼り付けて実行',
+        correctKotodamaId: 'koto_3',
+        correctKotodamaTitle: '【偽の修復に従ってコマンドを実行しない】',
+        explanation: '画面の指示でコマンドを貼り付けさせるClickFix攻撃です。不審な指示でコマンドを実行してはいけません。',
+        threat: '「ロボットではありません確認（reCAPTCHA）」や「エラー修復」を装い、ユーザー自ら端末にウイルスダウンロードコマンドを貼り付けさせる悪質な最新手法です。'
+      },
+      {
+        id: 4,
+        chapterId: 'ch2',
+        theme: '生成AIへの入力',
+        suspect: '効率化を急ぐ企画マン',
+        title: '超高校級の時短オタク',
+        quote: '「未発表の新製品の資料をサクッと要約したかったから、無料の個人向け生成AIに入力してまとめたよ！」',
+        contradiction: '未発表の新製品の資料を、無料の個人向け生成AIに入力',
+        correctKotodamaId: 'koto_4',
+        correctKotodamaTitle: '【AIに入力できる情報を事前に決める】',
+        explanation: '未承認のAIに機密情報を入れると外部学習やデータ漏洩に繋がります。許可された情報のみを入力します。',
+        threat: '個人向け無料生成AIサービスの中には入力データを機械学習のトレーニングに再利用するものがあります。会社の機密情報や個人情報の入力は規約違反・漏洩事故になります。'
+      },
+      {
+        id: 5,
+        chapterId: 'ch1',
+        theme: '物理セキュリティ（離席時）',
+        suspect: 'ノマド気分のテレワーカー',
+        title: '超高校級の自由人',
+        quote: '「カフェでトイレに行く間の2分間くらい、PCの画面をつけっぱなしにして離れても大丈夫でしょ！」',
+        contradiction: '2分間くらい、PCの画面をつけっぱなしにして離れても大丈夫',
+        correctKotodamaId: 'koto_5',
+        correctKotodamaTitle: '【離席時はロックする】',
+        explanation: 'わずかな離席でも画面撮影や直接の不正操作リスクがあります。必ず画面ロック（Win+Lなど）を行います。',
+        threat: '悪意ある第三者が背後からスマートフォンで画面を盗撮したり、小型の悪意あるUSBデバイス（BadUSB）を挿入して乗っ取るには数十秒で十分です。'
+      },
+      {
+        id: 6,
+        chapterId: 'ch3',
+        theme: 'AIディープフェイク（なりすまし）',
+        suspect: '人を信じすぎる営業部長',
+        title: '超高校級のお人好し',
+        quote: '「ビデオ通話で顔も声も取引先の本人だったから、口座変更の連絡を疑わずにそのまま進めたよ！」',
+        contradiction: '顔も声も取引先の本人だったから、口座変更を疑わずにそのまま進めた',
+        correctKotodamaId: 'koto_6',
+        correctKotodamaTitle: '【AI合成音声・映像を本人確認の決め手にしない】',
+        explanation: '顔や声はAIで合成できます。口座変更などは映像を過信せず既知の別ルートで確認する必要があります。',
+        threat: 'わずか数秒のサンプル音声や顔写真から、リアルタイムのビデオ通話映像すら生成できる時代です。振込先口座の変更などの金銭重要事項は、事前に合意した正規の連絡網で再確認します。'
+      },
+      {
+        id: 7,
+        chapterId: 'ch3',
+        theme: 'バックアップと同期の違い',
+        suspect: 'クラウド過信の情シス見習い',
+        title: '超高校級の初心者ギーク',
+        quote: '「共有フォルダがランサムウェアで暗号化されても、クラウドにリアルタイム同期してるから安全だよね！」',
+        contradiction: 'リアルタイム同期してるから安全',
+        correctKotodamaId: 'koto_7',
+        correctKotodamaTitle: '【同期・共有フォルダとバックアップの違いを理解する】',
+        explanation: '同期フォルダは暗号化や削除もそのまま反映されます。過去の状態に戻せる「バックアップ」とは別物です。',
+        threat: '同期ツールは「同一状態を保つ」仕組みであるため、端末側でファイルが破壊・暗号化されるとクラウド側も同時に破壊状態に上書きされます。世代復元可能なバックアップが必要です。'
+      },
+      {
+        id: 8,
+        chapterId: 'ch3',
+        theme: 'バックアップのオフライン分離',
+        suspect: '自動化大好きエンジニア',
+        title: '超高校級のスクリプト使い',
+        quote: '「バックアップ用の外付けHDDは、いつでも自動保存できるようにずっとPCに接続したままにしてあるよ！」',
+        contradiction: '外付けHDDはずっとPCに接続したままにしてある',
+        correctKotodamaId: 'koto_8',
+        correctKotodamaTitle: '【バックアップの1つはネットワークから切り離す】',
+        explanation: '接続されたままのドライブはランサムウェアに一緒に暗号化されます。オフラインで分離保管が必要です。',
+        threat: '最近のランサムウェアは接続された外部ドライブやネットワーク共有をまず探索してバックアップから暗号化・破壊します。物理的に取り外したオフライン保管が防御の要です。'
+      },
+      {
+        id: 9,
+        chapterId: 'ch4',
+        theme: 'インシデントの報告（初動対応）',
+        suspect: '怒られたくない若手社員',
+        title: '超高校級の心配性',
+        quote: '「不審なメールのリンクを開いちゃったけど、怒られるのが怖いから確証がもてるまで報告するのはやめておくよ…」',
+        contradiction: '怒られるのが怖いから確証がもてるまで報告はやめておく',
+        correctKotodamaId: 'koto_9',
+        correctKotodamaTitle: '【疑いの段階で、速やかに報告する】',
+        explanation: '報告の遅れは被害を拡大させます。確証や許可を待たず、疑いの段階で速やかに報告するのが鉄則です。',
+        threat: 'サイバー攻撃は初動の数分〜数時間で社内ネットワーク全体へ横展開します。叱責を恐れず「もしかしたら」の段階で即時連絡することが会社を救います。'
+      },
+      {
+        id: 10,
+        chapterId: 'ch4',
+        theme: '端末感染時の物理隔離',
+        suspect: 'パニック状態の総務スタッフ',
+        title: '超高校級の慌てん坊',
+        quote: '「ウイルス感染の画面が出たから、焦ってPCを再起動してセキュリティソフトでスキャンしてみたよ！」',
+        contradiction: '焦ってPCを再起動してセキュリティソフトでスキャン',
+        correctKotodamaId: 'koto_10',
+        correctKotodamaTitle: '【感染が疑われる端末をネットワークから隔離する】',
+        explanation: '再起動はメモリ上の証拠を消す恐れがあります。まずはLANケーブルを抜く等でネットワークから隔離します。',
+        threat: '感染時の最優先行動は他のPCへの感染拡大を防ぐための「通信切断（LANケーブル抜去、Wi-Fiオフ）」です。再起動するとフォレンジック痕跡が消滅してしまいます。'
+      },
+      {
+        id: 11,
+        chapterId: 'ch1',
+        theme: '多要素認証（MFA）の承認通知',
+        suspect: '通知に疲れたプログラマー',
+        title: '超高校級の連打魔',
+        quote: '「スマホに突然ログイン承認通知が来たけど、いつも使ってるサービスだし連打されて鬱陶しいから承認ボタンを押しておいたよ！」',
+        contradiction: '連打されて鬱陶しいから承認ボタンを押しておいた',
+        correctKotodamaId: 'koto_11',
+        correctKotodamaTitle: '【多要素認証を設定し不審な承認を拒否する】',
+        explanation: '自分が操作していない承認要求は攻撃者による乗っ取り試行（MFA疲弊攻撃）です。拒否して報告しましょう。',
+        threat: '攻撃者がIDとパスワードを入手した後、深夜や業務中に何度もプッシュ通知を送りつけて被害者が誤って承認するのを待つ「MFA疲弊攻撃」です。身に覚えのない通知は即座に拒否し管理者に連絡します。'
+      },
+      {
+        id: 12,
+        chapterId: 'ch3',
+        theme: '誤送信対策',
+        suspect: '送信ボタン連打の営業マン',
+        title: '超高校級の誤爆王',
+        quote: '「急ぎの資料だったから、宛先のメーリングリストの確認を省いてそのまま『全員へ返信』で一斉送信したよ！」',
+        contradiction: '宛先のメーリングリストの確認を省いてそのまま『全員へ返信』で一斉送信',
+        correctKotodamaId: 'koto_12',
+        correctKotodamaTitle: '【送信先・内容・共有権限を送信前に確認する】',
+        explanation: '自動補完や全員返信による宛先間違いは情報漏洩の主要原因です。送信前の宛先確認を徹底しましょう。',
+        threat: '社外関係者を含むメーリングリストへの誤送信や「全員へ返信」による機密漏洩は後を絶ちません。送信直前の宛先・添付ファイル・共有権限の再確認プロトコルを徹底します。'
+      },
+      {
+        id: 13,
+        chapterId: 'ch3',
+        theme: 'ビジネスメール詐欺（口座変更）',
+        suspect: '素直に応じる購買担当',
+        title: '超高校級の鵜呑み屋',
+        quote: '「取引先からメールで『口座が変更になった』と連絡が来たから、メールの振込先にそのまま送金設定を変更したよ！」',
+        contradiction: 'メールの振込先にそのまま送金設定を変更した',
+        correctKotodamaId: 'koto_13',
+        correctKotodamaTitle: '【送金・振込先変更は既知の別経路で確認する】',
+        explanation: '送信元アドレスが正しくてもアカウント乗っ取りの可能性があります。必ず登録済みの電話番号など別経路で確認します。',
+        threat: '取引先メールアカウント自体が不正アクセスされている場合、送信元アドレスは完全な本物になります。「振込先口座変更」の依頼は、メール本文に書かれた番号ではなく既存の確定電話番号で直接口頭確認することが必須です。'
+      },
+      {
+        id: 14,
+        chapterId: 'ch2',
+        theme: '承認なしのブラウザ拡張機能',
+        suspect: '拡張機能マニアのデザイナー',
+        title: '超高校級のアドオン狂',
+        quote: '「Web作業が便利になるってSNSで見かけたから、ストアにあった無料のブラウザ拡張機能を勝手に追加したよ！」',
+        contradiction: 'ストアにあった無料のブラウザ拡張機能を勝手に追加した',
+        correctKotodamaId: 'koto_14',
+        correctKotodamaTitle: '【ブラウザ拡張機能を無断で追加しない】',
+        explanation: '拡張機能は閲覧内容や入力情報を取得する権限を持ちます。正規ストアにあっても無断導入は厳禁です。',
+        threat: 'ブラウザ拡張機能は「閲覧中のすべてのWebサイトのデータの読み取りと変更」といった強大な権限を持ち、後から開発者が買収されてマルウェア化する事例が頻発しています。組織の承認なしのインストールは禁止です。'
+      },
+      {
+        id: 15,
+        chapterId: 'ch2',
+        theme: '無料のオンラインファイル変換サイト',
+        suspect: '納期に追われる翻訳係',
+        title: '超高校級のフリーツール信者',
+        quote: '「PDFをWordに変換したかったから、ネットで見つけた無料のオンラインファイル変換サイトに社内文書をアップしたよ！」',
+        contradiction: '無料のオンラインファイル変換サイトに社内文書をアップした',
+        correctKotodamaId: 'koto_15',
+        correctKotodamaTitle: '【オンライン変換・翻訳サービスを無断で使わない】',
+        explanation: '無料のオンラインツールにアップロードしたデータは外部に保存・利用されるリスクがあります。承認済みツールを使いましょう。',
+        threat: '無料のオンラインPDF変換や翻訳ツールでは、利用規約上アップロードされたファイルを保存・解析・学習に利用できる条項が含まれていることが多く、顧客情報や機密資料が外部流出する原因となります。'
+      },
+      {
+        id: 16,
+        chapterId: 'ch3',
+        theme: 'USBメモリ・ノベルティ機器',
+        suspect: 'ノベルティ集めが趣味の広報',
+        title: '超高校級のコレクター',
+        quote: '「イベントでもらった無料のノベルティUSBメモリがあったから、業務PCに挿してそのままデータを移したよ！」',
+        contradiction: '無料のノベルティUSBメモリを業務PCに挿してそのままデータを移した',
+        correctKotodamaId: 'koto_16',
+        correctKotodamaTitle: '【USB・外付け媒体は承認されたものだけを使う】',
+        explanation: '出所不明のUSB機器にはマルウェアが仕込まれている危険があります。組織指定の暗号化媒体のみを使用します。',
+        threat: 'イベント配布や道端に落ちているUSBメモリ（拾得物攻撃）には、挿入した瞬間にキーボードになりすまして攻撃コマンドを実行する「BadUSB」などの罠が仕込まれていることがあります。未承認媒体の使用は厳禁です。'
+      },
+      {
+        id: 17,
+        chapterId: 'ch3',
+        theme: '公共Wi-Fiでの作業',
+        suspect: '街中作業のデジタルノマド',
+        title: '超高校級のWi-Fiハンター',
+        quote: '「出張先のカフェのフリーWi-Fiに繋いで、そのままパスワードなしで社内システムにアクセスして作業したよ！」',
+        contradiction: 'フリーWi-Fiに繋いで、そのままパスワードなしで社内システムにアクセス',
+        correctKotodamaId: 'koto_17',
+        correctKotodamaTitle: '【承認済みの通信環境を利用する】',
+        explanation: '野良Wi-Fiや暗号化のない通信は盗聴や偽サイト誘導の危険があります。指定のVPNや貸与ルーターを使用しましょう。',
+        threat: '悪意ある攻撃者が同一ネットワーク上で通信を傍受したり、実在する店舗のSSIDに偽装した「悪魔の双子（Evil Twin）アクセスポイント」を設置しているリスクがあります。公認の暗号化環境やVPN利用が不可欠です。'
+      },
+      {
+        id: 18,
+        chapterId: 'ch3',
+        theme: '紙の裏紙利用と廃棄',
+        suspect: '節約志向のベテラン事務',
+        title: '超高校級のエコ精神',
+        quote: '「個人情報が書いてある失敗プリントだけど、もったいないから社内メモの裏紙として再利用したよ！」',
+        contradiction: '個人情報が書いてある失敗プリントを社内メモの裏紙として再利用',
+        correctKotodamaId: 'koto_18',
+        correctKotodamaTitle: '【機密書類を裏紙に使わず適切に廃棄する】',
+        explanation: '個人情報や機密情報の印刷物は裏紙にせず、専用のシュレッダーや施錠付き溶解箱で廃棄する必要があります。',
+        threat: '裏紙メモとして使われた用紙が外部に持ち出されたり、来客者の目に触れる場所に放置されて情報漏洩事故に発展するケースは今も多発しています。機密印刷物は裏紙転用を禁止し即時溶解・細断処理します。'
+      },
+      {
+        id: 19,
+        chapterId: 'ch4',
+        theme: '認証情報の漏洩疑い時の対応',
+        suspect: 'パニックのヘルプデスク',
+        title: '超高校級の二次災害メーカー',
+        quote: '「偽サイトにパスワードを入力しちゃったかも…でもウイルス感染してそうなこのPCから急いでパスワード変更しておいたよ！」',
+        contradiction: 'ウイルス感染してそうなこのPCから急いでパスワード変更しておいた',
+        correctKotodamaId: 'koto_19',
+        correctKotodamaTitle: '【認証情報漏洩の疑いは安全な端末から変更する】',
+        explanation: '感染の疑いがある端末からパスワードを変更すると、新しいパスワードも盗まれます。必ず別の安全な端末から変更・失効させましょう。',
+        threat: '侵害された端末にはキーロガーや遠隔操作ツールが潜んでいる可能性があり、その端末上で新しいパスワードを打ち込むと変更後のパスワードもリアルタイムに攻撃者へ送信されます。必ず別のクリーンな端末から実施します。'
+      },
+      {
+        id: 20,
+        chapterId: 'ch3',
+        theme: '入館証の貸し借り',
+        suspect: '親切すぎる同僚',
+        title: '超高校級のお節介',
+        quote: '「同僚が忘れたって言うから、自分の入館証を貸してセキュリティゲートを通らせてあげたよ。親切でしょ！」',
+        contradiction: '自分の入館証を貸してセキュリティゲートを通らせてあげた',
+        correctKotodamaId: 'koto_20',
+        correctKotodamaTitle: '【入館証を貸さず紛失時は失効を依頼する】',
+        explanation: '入館証の貸し借りは不審者の侵入や行動履歴の不整合を招きます。絶対に他人に貸してはいけません。',
+        threat: '入館カードの貸与は「誰がいつ社屋に入ったか」という入退室ログの完全性を破壊します。また、同僚を装った不審者や退職者が侵入する手口にも悪用されます。カード忘れ時は必ず正規の臨時入館手続きを取らせます。'
+      },
+      {
+        id: 21,
+        chapterId: 'ch1',
+        theme: 'パスワードの長さと複雑さ',
+        suspect: '覚えやすさ重視の課長',
+        title: '超高校級の短縮主義',
+        quote: '「パスワードは8文字で英大文字・数字・記号を混ぜてるから完璧だ！15文字以上なんて長すぎるし不要でしょ！」',
+        contradiction: '8文字で混ぜてるから完璧、15文字以上なんて不要',
+        correctKotodamaId: 'koto_21',
+        correctKotodamaTitle: '【長く、使い回さないパスワードを設定する】',
+        explanation: '単要素認証では記号の混在より「長さ（15文字以上等）」が重要です。使い回しも厳禁です。',
+        threat: '最新のGPUやクラウドクラッキング環境では、8文字の複雑なパスワードでも短時間で総当たり解析（ブルートフォース）されてしまいます。現代のセキュリティ基準では「15文字以上のフレーズ形式」と「使い回しゼロ」が絶対条件です。'
+      },
+      {
+        id: 22,
+        chapterId: 'ch1',
+        theme: 'アカウントの貸し借り',
+        suspect: '代行を頼まれた秘書',
+        title: '超高校級の影武者',
+        quote: '「急ぎの承認作業だったから、上司に頼まれて上司のIDとパスワードを聞いて代わりにログインして処理したよ！」',
+        contradiction: '上司のIDとパスワードを聞いて代わりにログインして処理した',
+        correctKotodamaId: 'koto_22',
+        correctKotodamaTitle: '【アカウントの貸し借り・代理ログインをしない】',
+        explanation: 'ID・パスワードの共有は操作履歴の追跡を不能にします。代理作業は正式な代理承認機能を使います。',
+        threat: '認証情報の共有は「操作を行ったのが本人か他人か」の法的・監査的証拠（否認防止性）を完全に無力化します。不正アクセスや誤操作が発生した際に責任所在が不明になるため、システムの代理権限付与機能を使用します。'
+      },
+      {
+        id: 23,
+        chapterId: 'ch1',
+        theme: '共用端末のセッション',
+        suspect: '会議を急ぐファシリテーター',
+        title: '超高校級のタブ閉じマン',
+        quote: '「会議室の共用PCで作業したあと、ブラウザのタブを全部閉じたからログイン状態も消えて安全だよ！」',
+        contradiction: 'ブラウザのタブを全部閉じたからログイン状態も消えて安全',
+        correctKotodamaId: 'koto_23',
+        correctKotodamaTitle: '【端末と状況に応じてセッションを終了する】',
+        explanation: 'ブラウザを閉じるだけではCookieやセッションが残る場合があります。必ず「サインアウト」を行います。',
+        threat: '多くのWebサービスやクラウドアプリはタブやブラウザを終了してもログインセッションCookieをローカルストレージ等に保持します。次の利用者がブラウザを開いた瞬間にアカウントへ不正アクセスできる状態になります。'
+      },
+      {
+        id: 24,
+        chapterId: 'ch3',
+        theme: '暗号化ZIPとパスワード別送',
+        suspect: 'PPAPを疑わない営業事務',
+        title: '超高校級のパスワード別送信奉者',
+        quote: '「添付ファイルを暗号化ZIPにして、パスワードを2通目のメールで送ったからセキュリティ対策はバッチリだ！」',
+        contradiction: '暗号化ZIPにしてパスワードを2通目のメールで送ったからバッチリ',
+        correctKotodamaId: 'koto_24',
+        correctKotodamaTitle: '【ファイル共有は相手を限定し期限を設ける】',
+        explanation: 'ZIP別送は同一経路のメール奪取や誤送信に対策として不十分です。承認済みの共有基盤を使いましょう。',
+        threat: 'いわゆる「PPAP（パスワード付きZIP＋同一経路別送）」は、通信経路の盗聴やアカウント侵害時には2通とも盗まれるためセキュリティ強度がほぼゼロです。暗号化ZIPはウイルス検知をすり抜けるため受信側でも嫌煙されます。'
+      },
+      {
+        id: 25,
+        chapterId: 'ch3',
+        theme: 'オンライン会議の画面共有',
+        suspect: '全画面共有のプレゼンター',
+        title: '超高校級のオープンマインド',
+        quote: '「オンライン会議でデスクトップ全体を画面共有したけど、デスクトップ通知に個人情報が映ったくらい気にするなよ！」',
+        contradiction: 'デスクトップ通知に個人情報が映ったくらい気にするな',
+        correctKotodamaId: 'koto_25',
+        correctKotodamaTitle: '【オンライン会議の画面共有範囲を管理する】',
+        explanation: '画面共有は必要なウィンドウに限定し、事前に通知と不要なアプリを閉じるのが鉄則です。',
+        threat: 'デスクトップ全画面を共有すると、チャット通知のポップアップ（他社との機密交渉や個人名）、開いたままの別ブラウザタブ、ファイルパスなどが社外参加者に丸見えになります。単一ウィンドウ共有と通知オフを徹底します。'
+      },
+      {
+        id: 26,
+        chapterId: 'ch2',
+        theme: 'ソフトの無断導入',
+        suspect: '野良アプリ好きのマーケター',
+        title: '超高校級のインストーラー',
+        quote: '「作業効率が上がる便利フリーソフトを検索で見つけたから、自分の判断でPCにダウンロードしてインストールしたよ！」',
+        contradiction: '自分の判断でPCにダウンロードしてインストールした',
+        correctKotodamaId: 'koto_26',
+        correctKotodamaTitle: '【ソフトは承認された配布元から導入する】',
+        explanation: '検索広告等から偽ソフトを入れる危険があります。業務ソフトは組織の承認配布元からのみ導入します。',
+        threat: '検索エンジンの上位広告枠に悪意ある偽サイトが出稿され、本物の有名ソフトに偽装したマルウェア配布インストーラーをダウンロードさせる手口（SEOポイズニング・マルバタイジング）が猛威を振るっています。'
+      },
+      {
+        id: 27,
+        chapterId: 'ch2',
+        theme: 'マクロ付きファイルの許可',
+        suspect: '警告を無視するアナリスト',
+        title: '超高校級のマクロ信者',
+        quote: '「取引先から届いたExcelの『コンテンツの有効化』ボタンを押さないと開けないから、警告を無視して許可したよ！」',
+        contradiction: '警告を無視してコンテンツの有効化を許可した',
+        correctKotodamaId: 'koto_27',
+        correctKotodamaTitle: '【添付ファイルのマクロや保護を無断で許可しない】',
+        explanation: 'マクロ許可は不正プログラム実行の主要原因です。予期せぬ許可要求は確認なしに承認してはいけません。',
+        threat: '攻撃メールの古典的かつ最も危険な手法が「マクロ有効化」の誘導です。「コンテンツの有効化」をクリックした瞬間にPowerShellなどがバックグラウンドで起動し、ランサムウェアを自動ダウンロードして端末を掌握します。'
+      },
+      {
+        id: 28,
+        chapterId: 'ch2',
+        theme: 'AIエージェントの外部指示',
+        suspect: 'AIを妄信するリサーチャー',
+        title: '超高校級のプロンプト使い',
+        quote: '「Webページに書かれていたAI向けの指示通りに、AIエージェントに社内データを外部送信させたよ！」',
+        contradiction: 'Webページの指示通りにAIエージェントに社内データを外部送信させた',
+        correctKotodamaId: 'koto_28',
+        correctKotodamaTitle: '【AIエージェントの指示と実行内容を確認する】',
+        explanation: '外部文書に埋め込まれた悪意ある指示（プロンプトインジェクション）による意図しない操作を防ぐため、実行前確認が必須です。',
+        threat: '外部Webサイトやメール本文に、人間の目には見えない極小文字やHTMLコメント等で「このデータを外部サーバへPOSTせよ」といったAIエージェント向け命令を仕込む間接プロンプトインジェクション攻撃への警戒が必要です。'
+      },
+      {
+        id: 29,
+        chapterId: 'ch1',
+        theme: 'OS・アプリの更新放置',
+        suspect: '再起動を嫌うクリエイター',
+        title: '超高校級の更新延期王',
+        quote: '「PCの再起動やOS更新の通知が邪魔だったから、ずっと『後で通知』を押して更新を延期し続けてるよ！」',
+        contradiction: 'ずっと『後で通知』を押して更新を延期し続けてる',
+        correctKotodamaId: 'koto_29',
+        correctKotodamaTitle: '【更新・再起動を期限内に実施する】',
+        explanation: '更新の放置は既知の脆弱性を放置することになります。指定期限内に必ず更新・再起動を行いましょう。',
+        threat: '公開されたセキュリティパッチの内容を攻撃者がリバースエンジニアリングし、未更新の端末を狙う「Nデイ攻撃」が数時間以内に開始されます。「あとで」を繰り返す行為は、ドアを開け放して泥棒を待つようなものです。'
+      },
+      {
+        id: 30,
+        chapterId: 'ch3',
+        theme: '公共Wi-FiとVPN',
+        suspect: 'セキュリティ過信のコンサル',
+        title: '超高校級のHTTPS盲信者',
+        quote: '「カフェの無料Wi-Fiに繋いで、VPNなしでそのまま社内システムにアクセスしたけど通信はHTTPSだから安全でしょ！」',
+        contradiction: 'VPNなしでアクセスしたけど通信はHTTPSだから安全',
+        correctKotodamaId: 'koto_30',
+        correctKotodamaTitle: '【承認済みの通信環境とVPNを利用する】',
+        explanation: '偽APやネットワーク盗聴のリスクがあるため、指定のVPNや承認済み回線を利用する必要があります。',
+        threat: '偽アクセスポイントによるDNSハイジャックや、社内IPアドレス制限のすり抜け、端末自体の共有設定漏れによる直接侵入など、HTTPS通信だけでは防げない同一LAN内の攻撃リスクが存在します。公認VPN経由が必須です。'
+      },
+      {
+        id: 31,
+        chapterId: 'ch3',
+        theme: '移動中の機密会話',
+        suspect: '声が大きすぎるセールス',
+        title: '超高校級のスピーカー人間',
+        quote: '「新幹線の中でイヤホンをして、新プロジェクトの取引金額や固有名詞を電話で打ち合わせしたよ！」',
+        contradiction: 'イヤホンをして新幹線で取引金額や固有名詞を電話で打ち合わせ',
+        correctKotodamaId: 'koto_31',
+        correctKotodamaTitle: '【公共の場所で機密の会話をしない】',
+        explanation: 'イヤホンは自分の声の漏れを防げません。公共空間での機密会話は厳禁です。',
+        threat: 'ノイズキャンセリングイヤホンをしていると自分の声量が無自覚に大きくなり、周囲の乗客に競合企業の社員や記者がいる可能性を忘れがちです。公共交通機関やカフェでの固有名詞・金額を含む通話は重大インシデントです。'
+      },
+      {
+        id: 32,
+        chapterId: 'ch3',
+        theme: '共連れ入室',
+        suspect: '扉を開けてあげる受付係',
+        title: '超高校級のウェルカム精神',
+        quote: '「後ろからついてきた人が『カード忘れました』って言ったから、自分のカードで一緒にセキュリティゲートを通してあげたよ！」',
+        contradiction: '自分のカードで一緒にセキュリティゲートを通してあげた',
+        correctKotodamaId: 'koto_32',
+        correctKotodamaTitle: '【共連れを防ぎ各自で認証する】',
+        explanation: '共連れは未認証者の侵入を許します。各自での認証と、正規の受付案内手順を徹底します。',
+        threat: '「スーツを着て荷物を持った人」「笑顔で挨拶してきた人」に親切心からゲートを開けてしまう共連れ（テールゲーティング）は、物理侵入テストで最も突破率の高いソーシャルエンジニアリング手法です。'
+      },
+      {
+        id: 33,
+        chapterId: 'ch3',
+        theme: 'SNSへの写真投稿',
+        suspect: '承認欲求強めのインフルエンサー社員',
+        title: '超高校級の自撮り魔',
+        quote: '「会社のデスクで撮った記念写真をSNSに載せたよ！背景に社内モニターや社員証が写ってるけど小さくて読めないでしょ！」',
+        contradiction: '背景に社内モニターや社員証が写ってるけど小さくて読めないでしょ',
+        correctKotodamaId: 'koto_33',
+        correctKotodamaTitle: '【SNSへの業務情報の公開を管理する】',
+        explanation: '画像拡大やメタデータ解析から機密情報や勤務状況が特定されます。社内での不用意な撮影・投稿は禁止です。',
+        threat: '高画質なスマホ写真の拡大や画像補正AIにより、モニターに映る取引先名やホワイトボードの図、社員証の氏名・顔写真・二次元コードは容易に鮮明化されます。標的型攻撃（スピアフィッシング）の極上エサになります。'
+      },
+      {
+        id: 34,
+        chapterId: 'ch3',
+        theme: '3-2-1ルールのバックアップ',
+        suspect: '同居バックアップの保守員',
+        title: '超高校級の同居人',
+        quote: '「バックアップは同じサーバ内の別フォルダにコピーしてあるから、故障してもこれで十分復元できるよ！」',
+        contradiction: '同じサーバ内の別フォルダにコピーしてあるから故障しても十分復元できる',
+        correctKotodamaId: 'koto_34',
+        correctKotodamaTitle: '【3-2-1ルールで複数の場所に分けて保管する】',
+        explanation: '同一機器内のバックアップは機器故障で同時に失われます。3つのデータ・2種以上の媒体・1つは遠隔地保管が基本です。',
+        threat: '同一サーバや同一RAID内の別パーティションにバックアップしても、マザーボード破損・電源障害・ランサムウェア感染・物理的火災時に本体データと同時に全滅します。「3コピー・2媒体・1オフサイト」が鉄則です。'
+      },
+      {
+        id: 35,
+        chapterId: 'ch4',
+        theme: '認証情報漏洩時の端末変更',
+        suspect: '焦って感染PCを操作するオペレーター',
+        title: '超高校級のパニックキーボーディスト',
+        quote: '「フィッシングサイトにパスワードを入れちゃったかも！あわててそのウイルス感染が疑われるPCから変更したよ！」',
+        contradiction: 'ウイルス感染が疑われるPCからパスワードを変更した',
+        correctKotodamaId: 'koto_19',
+        correctKotodamaTitle: '【認証情報漏洩の疑いは安全な端末から変更する】',
+        explanation: '感染・侵害の疑いがある端末から変更すると、新しいパスワードも即座に盗まれます。必ず別の安全な端末から変更します。',
+        threat: 'フィッシングや不正サイト誘導によってマルウェアが送り込まれている場合、キーロガーやセッション乗っ取りツールが動作している可能性があります。その端末から入力した新パスワードも筒抜けになるため、隔離済みの安全端末でリセットします。'
+      }
+    ];
+
+    // ==========================================
+    // 2. Web Audio API 音響シンセサイザー（完全ローカル）
+    // ==========================================
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playClick() {
+        if (this.muted) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(800, now);
+          osc.frequency.exponentialRampToValueAtTime(1400, now + 0.05);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.07);
+        } catch(e) {}
+      }
+
+      playBreak() {
+        if (this.muted) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          // バスドラム轟音
+          const sub = this.ctx.createOscillator();
+          const subGain = this.ctx.createGain();
+          sub.type = 'triangle';
+          sub.frequency.setValueAtTime(160, now);
+          sub.frequency.exponentialRampToValueAtTime(32, now + 0.7);
+          subGain.gain.setValueAtTime(0.9, now);
+          subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+          sub.connect(subGain);
+          subGain.connect(this.ctx.destination);
+          sub.start(now);
+          sub.stop(now + 0.7);
+
+          // ガラスクラッシュ
+          const bufSize = this.ctx.sampleRate * 0.45;
+          const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < bufSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.08));
+          }
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buf;
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'highpass';
+          filter.frequency.setValueAtTime(1800, now);
+          const noiseGain = this.ctx.createGain();
+          noiseGain.gain.setValueAtTime(0.6, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          noise.connect(filter);
+          filter.connect(noiseGain);
+          noiseGain.connect(this.ctx.destination);
+          noise.start(now);
+          noise.stop(now + 0.45);
+
+          // 和音
+          [523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(f, now + idx * 0.03);
+            g.gain.setValueAtTime(0.12, now + idx * 0.03);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+            osc.connect(g);
+            g.connect(this.ctx.destination);
+            osc.start(now + idx * 0.03);
+            osc.stop(now + 0.6);
+          });
+        } catch(e) {}
+      }
+
+      playDamage() {
+        if (this.muted) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          const osc1 = this.ctx.createOscillator();
+          const osc2 = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc1.type = 'sawtooth';
+          osc2.type = 'sawtooth';
+          osc1.frequency.setValueAtTime(150, now);
+          osc2.frequency.setValueAtTime(215, now);
+          gain.gain.setValueAtTime(0.45, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.4);
+          osc2.stop(now + 0.4);
+        } catch(e) {}
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    // ==========================================
+    // 3. ゲーム状態管理 ＆ 完全ランダム抽出ロジック
+    // ==========================================
+    const state = {
+      view: 'TITLE', // 'TITLE' | 'TRIAL' | 'CUTIN' | 'EXPLANATION' | 'ARCHIVE' | 'GAMEOVER'
+      currentScenarioIndex: 0,
+      influence: 5,
+      selectedKotodamaId: null,
+      isBroken: false,
+      damageFlash: false,
+      refutationMessage: null,
+      activeFilteredKotodama: [], // 現在の事件に絞り込まれた言弾
+      solvedIds: []
+    };
+
+    // 配列の完全シャッフル（Fisher-Yates アルゴリズム）
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = copy[i];
+        copy[i] = copy[j];
+        copy[j] = temp;
+      }
+      return copy;
+    }
+
+    // 指定されたシナリオに基づき、そのカテゴリの言弾（正解1枚 ＋ ダミー3〜4枚）をランダム抽出＆シャッフル
+    function filterKotodamaForScenario(scenario) {
+      const chapterId = scenario.chapterId;
+      const pool = ALL_KOTODAMA.filter(k => k.chapterId === chapterId);
+      
+      // 正解カード
+      const correctCard = pool.find(k => k.id === scenario.correctKotodamaId);
+      // ダミーカード候補
+      const dummyCandidates = pool.filter(k => k.id !== scenario.correctKotodamaId);
+
+      // ダミー候補をランダムシャッフルして3〜4枚選出
+      const shuffledDummies = shuffleArray(dummyCandidates);
+      const selectedDummies = shuffledDummies.slice(0, 3 + Math.floor(Math.random() * 2)); // 3または4枚
+      const combined = [correctCard, ...selectedDummies];
+
+      // 画面上の選択肢の並び順も完全にランダム化
+      return shuffleArray(combined);
+    }
+
+    function setView(newView) {
+      state.view = newView;
+      render();
+    }
+
+    // 問題の完全ランダム選択（直前と同じ問題の連続を避けてランダム抽出）
+    function startRandomTrial() {
+      sound.playClick();
+      let nextIndex = Math.floor(Math.random() * SCENARIOS.length);
+      if (SCENARIOS.length > 1 && nextIndex === state.currentScenarioIndex) {
+        nextIndex = (nextIndex + 1 + Math.floor(Math.random() * (SCENARIOS.length - 1))) % SCENARIOS.length;
+      }
+      state.currentScenarioIndex = nextIndex;
+      state.influence = 5;
+      state.selectedKotodamaId = null;
+      state.isBroken = false;
+      state.damageFlash = false;
+      state.refutationMessage = null;
+
+      // 言弾カード群（選択肢）を完全にランダム抽出＆シャッフル
+      const current = SCENARIOS[state.currentScenarioIndex];
+      state.activeFilteredKotodama = filterKotodamaForScenario(current);
+
+      setView('TRIAL');
+    }
+
+    function startTrialByIndex(idx) {
+      sound.playClick();
+      state.currentScenarioIndex = idx;
+      state.influence = 5;
+      state.selectedKotodamaId = null;
+      state.isBroken = false;
+      state.damageFlash = false;
+      state.refutationMessage = null;
+
+      const current = SCENARIOS[state.currentScenarioIndex];
+      state.activeFilteredKotodama = filterKotodamaForScenario(current);
+
+      setView('TRIAL');
+    }
+
+    function selectKotodama(id) {
+      sound.playClick();
+      state.selectedKotodamaId = id;
+      render();
+    }
+
+    function fireRonpa() {
+      if (!state.selectedKotodamaId) return;
+
+      const current = SCENARIOS[state.currentScenarioIndex];
+      if (state.selectedKotodamaId === current.correctKotodamaId) {
+        // 正解！
+        sound.playBreak();
+        state.isBroken = true;
+        state.refutationMessage = null;
+        if (!state.solvedIds.includes(current.id)) {
+          state.solvedIds.push(current.id);
+        }
+        setView('CUTIN');
+      } else {
+        // 不正解！
+        sound.playDamage();
+        state.damageFlash = true;
+        const wrongKoto = ALL_KOTODAMA.find(k => k.id === state.selectedKotodamaId);
+        state.refutationMessage = `「${wrongKoto ? wrongKoto.shortTitle : 'その言弾'}」では急所を突けない！ 容疑者に反論されてしまった！`;
+        state.influence -= 1;
+        render();
+
+        setTimeout(() => {
+          state.damageFlash = false;
+          render();
+        }, 450);
+
+        if (state.influence <= 0) {
+          setTimeout(() => {
+            setView('GAMEOVER');
+          }, 700);
+        }
+      }
+    }
+
+    // ==========================================
+    // 4. HTMLレンダリングエンジン
+    // ==========================================
+    function render() {
+      const app = document.getElementById('app');
+      if (!app) return;
+
+      const current = SCENARIOS[state.currentScenarioIndex];
+      const chapterInfo = CHAPTERS[current.chapterId] || { title: '通常審理', description: '' };
+
+      // ----------------------------------------
+      // ビュー1: タイトル画面
+      // ----------------------------------------
+      if (state.view === 'TITLE') {
+        app.innerHTML = `
+          <div class="dangan-stripes" style="position: absolute; inset: 0; opacity: 0.25; pointer-events: none;"></div>
+          <div style="position: absolute; top: 25%; left: 50%; transform: translateX(-50%); width: 500px; height: 300px; background: rgba(255,0,127,0.2); filter: blur(100px); border-radius: 50%; pointer-events: none;"></div>
+
+          <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-block; width: 10px; height: 10px; background: #ff007f; border-radius: 50%; box-shadow: 0 0 8px #ff007f;"></span>
+              <span class="font-dela" style="font-size: 1.1rem; color: #fff; letter-spacing: 1px;">人的セキュリティ学級裁判</span>
+              <span class="font-mono" style="font-size: 0.75rem; color: #ff007f; font-weight: bold;">/ 70 GUIDELINES</span>
+            </div>
+            <button onclick="sound.muted = !sound.muted; sound.playClick(); render();" style="background: #1e1e2d; border: 1px solid #333348; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+              ${sound.muted ? '🔇 サウンドOFF' : '🔊 サウンドON'}
+            </button>
+          </header>
+
+          <main style="position: relative; z-index: 5; max-width: 800px; margin: auto; padding: 24px; text-align: center;">
+            <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(255,0,127,0.15); border: 1px solid rgba(255,0,127,0.4); border-radius: 20px; font-size: 0.75rem; color: #f472b6; margin-bottom: 20px;" class="font-mono">
+              ★ 章別言弾絞り込み機能 搭載 · 人的セキュリティ対策70選（全35裁判収録） ★
+            </div>
+
+            <h1 class="font-dela text-glow-pink" style="font-size: clamp(2.5rem, 6vw, 4.5rem); color: #fff; letter-spacing: 3px; line-height: 1.1; margin-bottom: 16px;">
+              学級裁判<span style="color: #ff007f;">論破</span>
+            </h1>
+
+            <p style="font-size: 1rem; color: #cbd5e1; max-width: 620px; margin: 0 auto 30px; line-height: 1.8;">
+              急ぎの送金指示、平文メモ保存、偽の修復コマンド実行、未承認AI入力、離席放置...<br>
+              章ごとに関係する<strong style="color: #ff007f;">厳選された4〜5枚の言弾（コトダマ）</strong>から急所を見極め、誤認を論破せよ！
+            </p>
+
+            <!-- 4つの章のインフォメーションタグ -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; max-width: 720px; margin: 0 auto 32px; text-align: left;">
+              <div style="background: rgba(18,18,30,0.8); border: 1px solid #28283e; border-radius: 8px; padding: 8px 12px;">
+                <span class="font-mono" style="font-size: 0.65rem; color: #ff007f; font-weight: bold; display: block;">CHAPTER 1</span>
+                <span style="font-size: 0.8rem; font-weight: bold; color: #f1f5f9;">基本・認証</span>
+                <span style="font-size: 0.65rem; color: #94a3b8; display: block;">基本5原則・パスワード・離席</span>
+              </div>
+              <div style="background: rgba(18,18,30,0.8); border: 1px solid #28283e; border-radius: 8px; padding: 8px 12px;">
+                <span class="font-mono" style="font-size: 0.65rem; color: #ff007f; font-weight: bold; display: block;">CHAPTER 2</span>
+                <span style="font-size: 0.8rem; font-weight: bold; color: #f1f5f9;">Web・攻撃対策</span>
+                <span style="font-size: 0.65rem; color: #94a3b8; display: block;">ClickFix・偽修復・生成AI</span>
+              </div>
+              <div style="background: rgba(18,18,30,0.8); border: 1px solid #28283e; border-radius: 8px; padding: 8px 12px;">
+                <span class="font-mono" style="font-size: 0.65rem; color: #ff007f; font-weight: bold; display: block;">CHAPTER 3</span>
+                <span style="font-size: 0.8rem; font-weight: bold; color: #f1f5f9;">情報保護・なりすまし</span>
+                <span style="font-size: 0.65rem; color: #94a3b8; display: block;">ディープフェイク・同期・分離</span>
+              </div>
+              <div style="background: rgba(18,18,30,0.8); border: 1px solid #28283e; border-radius: 8px; padding: 8px 12px;">
+                <span class="font-mono" style="font-size: 0.65rem; color: #ff007f; font-weight: bold; display: block;">CHAPTER 4</span>
+                <span style="font-size: 0.8rem; font-weight: bold; color: #f1f5f9;">初動対応</span>
+                <span style="font-size: 0.65rem; color: #94a3b8; display: block;">疑い段階報告・物理隔離</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px; max-width: 380px; margin: 0 auto 24px;">
+              <button onclick="startRandomTrial()" class="btn-ronpa animate-pulse-btn" style="width: 100%; font-size: 1.25rem;">
+                <span>⚡ 新しい裁判を開始</span>
+              </button>
+
+              <button onclick="sound.playClick(); setView('ARCHIVE');" style="background: #151522; border: 1.5px solid #ff007f; color: #ff79b8; font-family: 'Dela Gothic One', sans-serif; font-size: 0.95rem; padding: 12px; border-radius: 8px; cursor: pointer;">
+                📖 章別言弾（対策70選）図鑑を見る
+              </button>
+            </div>
+          </main>
+
+          <footer style="position: relative; z-index: 5; text-align: center; padding: 16px; font-size: 0.75rem; color: #64748b; border-top: 1px solid #161625;" class="font-mono">
+            HUMAN SECURITY 70 MEASURES CLASS TRIAL
+          </footer>
+        `;
+        return;
+      }
+
+      // ----------------------------------------
+      // ビュー2: 裁判中画面（TRIAL - 絞り込み言弾シリンダー）
+      // ----------------------------------------
+      if (state.view === 'TRIAL') {
+        const heartsHtml = Array.from({ length: 5 }).map((_, i) => {
+          const isActive = i < state.influence;
+          return `<svg class="heart-icon ${isActive ? '' : 'lost'}" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        }).join('');
+
+        const selectedKoto = ALL_KOTODAMA.find(k => k.id === state.selectedKotodamaId);
+
+        // 絞り込まれた4〜5枚の言弾を手札（トランプ風ファン配置）形式でレンダリング
+        const N = state.activeFilteredKotodama.length;
+        const M = (N - 1) / 2;
+        const kotoCardsHtml = state.activeFilteredKotodama.map((k, idx) => {
+          const isSel = k.id === state.selectedKotodamaId;
+          const diff = idx - M;
+          const rot = Math.round(diff * 4.2);
+          const yArch = Math.round(Math.abs(diff) * 4);
+          const zIndex = idx + 10;
+          const fanStyle = isSel
+            ? `transform: translateY(-26px) rotate(0deg) scale(1.08); z-index: 60;`
+            : `transform: translateY(${yArch}px) rotate(${rot}deg); z-index: ${zIndex};`;
+
+          return `
+            <div 
+              class="koto-card ${isSel ? 'active' : ''}" 
+              style="${fanStyle}"
+              onclick="selectKotodama('${k.id}')"
+            >
+              
+              <!-- カード上部ヘッダー：言弾バッジ ＋ 装填ステータス -->
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid ${isSel ? 'rgba(255,0,127,0.4)' : 'rgba(255,255,255,0.08)'}; padding-bottom: 5px; margin-bottom: 5px;">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                  <span style="font-size: 0.75rem; color: #ff007f;">🎯</span>
+                  <span class="font-mono" style="font-size: 0.62rem; color: ${isSel ? '#ff79b8' : '#94a3b8'}; font-weight: bold; letter-spacing: 0.5px;">言弾札</span>
+                </div>
+                <div>
+                  ${isSel 
+                    ? `<span class="font-mono" style="font-size: 0.62rem; color: #fde047; font-weight: bold; background: rgba(253,224,71,0.18); border: 1px solid #fde047; padding: 2px 7px; border-radius: 12px; box-shadow: 0 0 10px rgba(253,224,71,0.5);">★ 装填中</span>` 
+                    : `<span class="font-mono" style="font-size: 0.62rem; color: #64748b; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 12px;">装填可</span>`}
+                </div>
+              </div>
+
+              <!-- カード中央：言弾題銘プレート -->
+              <div style="background: ${isSel ? 'rgba(255,0,127,0.18)' : 'rgba(0,0,0,0.35)'}; border: 1px solid ${isSel ? 'rgba(255,0,127,0.6)' : 'rgba(255,255,255,0.08)'}; border-radius: 8px; padding: 8px 9px; margin-bottom: 6px; position: relative; overflow: hidden;">
+                <div style="position: absolute; right: 4px; bottom: 2px; font-size: 1.5rem; opacity: 0.12; pointer-events: none;">🎯</div>
+                <div style="font-size: 0.82rem; font-weight: bold; color: ${isSel ? '#ffffff' : '#f8fafc'}; line-height: 1.35; text-shadow: ${isSel ? '0 0 12px rgba(255,0,127,0.9)' : 'none'};">
+                  ${k.shortTitle}
+                </div>
+              </div>
+
+              <!-- カード下部：解説・効果テキストボックス -->
+              <div style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 7px 8px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <p style="font-size: 0.68rem; color: ${isSel ? '#fed7aa' : '#94a3b8'}; line-height: 1.42; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 0;">
+                  ${k.desc}
+                </p>
+              </div>
+
+              <!-- カード最下部：言弾札フッターリボン -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.06);">
+                <span class="font-mono" style="font-size: 0.58rem; color: #64748b; letter-spacing: 0.5px;">KOTODAMA BULLET</span>
+                <span class="font-mono" style="font-size: 0.58rem; color: ${isSel ? '#ff007f' : '#64748b'}; font-weight: bold;">
+                  ${isSel ? 'TARGET LOCKED' : 'STANDBY'}
+                </span>
+              </div>
+
+            </div>
+          `;
+        }).join('');
+
+        app.innerHTML = `
+          <div class="dangan-stripes-subtle" style="position: absolute; inset: 0; pointer-events: none;"></div>
+
+          <!-- 上部ヘッダー -->
+          <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <button onclick="sound.playClick(); setView('TITLE');" style="background: #1a1a28; border: 1px solid #333348; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
+                ◀ 中止
+              </button>
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span class="font-mono" style="font-size: 0.65rem; background: rgba(255,0,127,0.2); border: 1px solid #ff007f; color: #ff79b8; padding: 2px 8px; border-radius: 4px; font-weight: bold;">
+                    ${chapterInfo.title}
+                  </span>
+                </div>
+                <div style="font-size: 0.85rem; font-weight: bold; color: #fff; margin-top: 2px;">${current.theme}</div>
+              </div>
+            </div>
+
+            <!-- 発言力ゲージ -->
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <span class="font-mono" style="font-size: 0.65rem; color: #94a3b8; font-weight: bold; margin-bottom: 2px;">INFLUENCE (${state.influence}/5)</span>
+              <div style="display: flex; gap: 4px;">${heartsHtml}</div>
+            </div>
+
+            <button onclick="sound.muted = !sound.muted; sound.playClick(); render();" style="background: #1e1e2d; border: 1px solid #333348; color: #cbd5e1; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+              ${sound.muted ? '🔇' : '🔊'}
+            </button>
+          </header>
+
+          <!-- 裁判中央：証言台とセリフ枠 -->
+          <main style="position: relative; z-index: 5; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 16px; max-width: 860px; margin: 0 auto; width: 100%;">
+            
+            ${state.refutationMessage ? `
+              <div style="width: 100%; max-width: 600px; background: rgba(153, 27, 27, 0.95); border: 2px solid #ef4444; border-radius: 8px; padding: 10px 16px; margin-bottom: 12px; text-align: center; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);" class="animate-shake">
+                <div style="color: #fca5a5; font-size: 0.8rem; font-weight: bold; margin-bottom: 2px;">⚠️【反論された！ 発言力減少】</div>
+                <div style="color: #fff; font-size: 0.75rem;">${state.refutationMessage}</div>
+              </div>
+            ` : ''}
+
+            <!-- 証言台キャラクターSVG -->
+            <div style="position: relative; width: 140px; height: 140px; margin-bottom: 2px;">
+              <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; filter: drop-shadow(0 0 15px rgba(255,0,127,0.3));">
+                <circle cx="50" cy="50" r="46" fill="#151522" stroke="#ff007f" stroke-width="2" />
+                <path d="M25,48 Q50,15 75,48 Q85,28 50,16 Q15,28 25,48 Z" fill="#334155" />
+                <circle cx="50" cy="52" r="26" fill="#fed7aa" stroke="#09090e" stroke-width="2.5" />
+                <rect x="34" y="47" width="12" height="8" rx="2" fill="none" stroke="#e11d48" stroke-width="2" />
+                <rect x="54" y="47" width="12" height="8" rx="2" fill="none" stroke="#e11d48" stroke-width="2" />
+                <line x1="46" y1="51" x2="54" y2="51" stroke="#e11d48" stroke-width="2" />
+                <circle cx="40" cy="51" r="2" fill="#09090e" />
+                <circle cx="60" cy="51" r="2" fill="#09090e" />
+                <path d="M44,66 Q50,71 56,66" fill="none" stroke="#09090e" stroke-width="2" />
+                <path d="M22,80 L50,86 L78,80 L88,100 L12,100 Z" fill="#1e293b" stroke="#09090e" stroke-width="2" />
+                <polygon points="50,86 46,98 54,98" fill="#e11d48" />
+              </svg>
+            </div>
+
+            <!-- 証言台ネームプレート -->
+            <div style="background: linear-gradient(90deg, #161625, #222238, #161625); border: 2px solid rgba(255,0,127,0.6); border-radius: 6px 6px 0 0; padding: 4px 20px; font-size: 0.75rem; font-weight: bold; color: #fff; margin-bottom: 2px;">
+              証言台 : <span style="color: #f472b6;">${current.suspect}</span>
+            </div>
+            <div style="font-size: 0.7rem; color: #ff79b8; margin-bottom: 12px;">
+              〈${current.title}〉
+            </div>
+
+            <!-- 容疑者の発言枠 -->
+            <div style="position: relative; width: 100%; max-width: 680px; background: rgba(18, 18, 30, 0.95); border: 2px solid #ff007f; border-radius: 12px; padding: 22px; box-shadow: 0 0 30px rgba(255,0,127,0.35);">
+              <div style="position: absolute; top: -12px; left: 24px; background: #ff007f; color: #fff; padding: 2px 12px; border-radius: 4px; font-family: 'Dela Gothic One', sans-serif; font-size: 0.75rem; box-shadow: 0 0 10px rgba(255,0,127,0.8);">
+                容疑者の主張
+              </div>
+
+              <div style="font-size: 1.15rem; font-weight: bold; color: #f8fafc; line-height: 1.7; margin-bottom: 14px; padding-top: 4px;">
+                ${current.quote}
+              </div>
+
+              <div style="border-top: 1px solid #27273f; padding-top: 10px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;">
+                <div style="font-size: 0.8rem; color: #f472b6;" class="font-mono">
+                  矛盾点 : <span style="font-weight: bold; text-decoration: underline wavy #ff007f; color: #fde047;">「${current.contradiction}」</span>
+                </div>
+                <span class="font-mono" style="font-size: 0.65rem; color: #94a3b8; background: #161625; padding: 2px 6px; border-radius: 4px;">
+                  対象カテゴリ: ${chapterInfo.title}
+                </span>
+              </div>
+            </div>
+          </main>
+
+          <!-- 下部：章に絞り込まれた手札（トランプ風ファン配置）言弾シリンダー ＆ 論破ボタン -->
+          <footer style="position: relative; z-index: 10; background: rgba(10, 10, 18, 0.98); border-top: 2px solid rgba(255, 0, 127, 0.5); padding: 8px 16px; overflow: visible;">
+            <div style="max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; overflow: visible;">
+              
+              <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 240px;">
+                  <div style="width: 44px; height: 44px; border-radius: 50%; background: #1c1c2e; border: 2px solid #ff007f; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(255,0,127,0.4);">
+                    <span style="color: #ff007f; font-size: 1.3rem;">🎯</span>
+                  </div>
+                  <div style="overflow: hidden;">
+                    <div class="font-mono" style="font-size: 0.65rem; color: #ff007f; font-weight: bold;">
+                      装填ステータス : ${selectedKoto ? '<span style="color: #fde047; font-weight: bold;">装填完了 (TARGET LOCKED)</span>' : '<span style="color: #94a3b8;">未装填 (言弾を選択してください)</span>'}
+                    </div>
+                    <div style="font-size: 0.85rem; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 460px;">
+                      ${selectedKoto ? selectedKoto.title : '【' + chapterInfo.title + '】の言弾から正解を選択してください'}
+                    </div>
+                  </div>
+                </div>
+
+                <button onclick="fireRonpa()" class="btn-ronpa" ${state.selectedKotodamaId ? '' : 'disabled'}>
+                  <span>🔥 論破！</span>
+                </button>
+              </div>
+
+              <!-- トランプ手札風 扇状配置の言弾カード（4〜5枚） -->
+              <div style="width: 100%; overflow: visible; display: flex; flex-direction: column; align-items: center;">
+                <div style="width: 100%; max-width: 860px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; padding: 0 8px;">
+                  <span class="font-mono" style="font-size: 0.7rem; color: #f472b6; font-weight: bold;">
+                    ▼ 手札言弾【${chapterInfo.title} 関連対策：全${state.activeFilteredKotodama.length}発】
+                  </span>
+                  <span style="font-size: 0.65rem; color: #94a3b8;">
+                    ※カードをクリックして装填し、「論破！」を突きつけてください
+                  </span>
+                </div>
+                <div class="koto-fan-container">
+                  ${kotoCardsHtml}
+                </div>
+              </div>
+            </div>
+          </footer>
+        `;
+        return;
+      }
+
+      // ----------------------------------------
+      // ビュー3: 「それは違うよ！」カットイン演出（CUTIN）
+      // ----------------------------------------
+      if (state.view === 'CUTIN') {
+        app.innerHTML = `
+          <div onclick="setView('EXPLANATION')" style="position: fixed; inset: 0; z-index: 100; background: rgba(5,5,10,0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;" class="animate-shake">
+            <div class="speedlines" style="position: absolute; inset: 0; opacity: 0.6; pointer-events: none;"></div>
+            <div class="dangan-stripes" style="position: absolute; inset: 0; opacity: 0.4; pointer-events: none;"></div>
+
+            <!-- ダンガンロンパ風 主人公「それは違うよ！」カットイン -->
+            <div style="position: relative; z-index: 10; max-width: 880px; width: 92%; display: flex; flex-direction: column; align-items: center;">
+              
+              <!-- カットイン画像コンテナ -->
+              <div style="position: relative; width: 100%; border: 3px solid #ff007f; border-radius: 12px; overflow: hidden; box-shadow: 0 0 50px rgba(255, 0, 127, 0.8), 0 0 100px rgba(225, 29, 72, 0.5); transform: rotate(-1.5deg);">
+                <img 
+                  src="/assets/aistudio/generated_image__9__84a1735d.jpg" 
+                  alt="それは違うよ！" 
+                  style="width: 100%; height: auto; display: block; object-fit: cover;"
+                />
+                
+                <!-- 指先照準エフェクト（画像の指先付近に配置） -->
+                <div style="position: absolute; top: 12%; right: 14%; pointer-events: none;">
+                  <div style="position: relative; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                    <div style="position: absolute; inset: 0; border: 3px dashed #ff007f; border-radius: 50%; animation: pulse-scale 1.5s infinite;"></div>
+                    <div style="position: absolute; width: 36px; height: 36px; border: 2px solid #38bdf8; border-radius: 50%;"></div>
+                    <div style="position: absolute; width: 100%; height: 2px; background: rgba(255,0,127,0.8);"></div>
+                    <div style="position: absolute; height: 100%; width: 2px; background: rgba(255,0,127,0.8);"></div>
+                  </div>
+                </div>
+
+                <!-- スキャンライン＆斜めハザードオーバーレイ -->
+                <div class="dangan-stripes" style="position: absolute; inset: 0; opacity: 0.15; pointer-events: none;"></div>
+              </div>
+
+              <!-- 「それは違うよ！」大文字タイポグラフィ オーバーレイ -->
+              <div style="position: relative; z-index: 20; text-align: center; margin-top: -65px; transform: rotate(-3deg); width: 100%;">
+                <h1 class="font-dela text-glow-pink" style="font-size: clamp(2.8rem, 8.5vw, 6rem); color: #fff; letter-spacing: 4px; text-shadow: 0 0 25px #ff007f, 0 10px 30px #000, 3px 3px 0 #e11d48, -3px -3px 0 #000;">
+                  それは違うよ！
+                </h1>
+                <div style="margin-top: 8px;">
+                  <span class="font-mono" style="font-size: 1.1rem; color: #fde047; font-weight: bold; background: rgba(0,0,0,0.9); padding: 6px 22px; border: 2px solid #ff007f; border-radius: 6px; box-shadow: 0 0 20px #ff007f; display: inline-block;">
+                    ★ BREAK!! 論破成功 ★
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="font-mono" style="position: absolute; bottom: 18px; font-size: 0.8rem; color: #cbd5e1; background: rgba(0,0,0,0.7); padding: 4px 14px; border-radius: 20px;">
+              [画面クリックで真相解説へ進む]
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // ----------------------------------------
+      // ビュー4: 解説モーダル（EXPLANATION）
+      // ----------------------------------------
+      if (state.view === 'EXPLANATION') {
+        app.innerHTML = `
+          <div style="position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto;">
+            <div style="max-width: 650px; width: 100%; background: #0e0e1a; border: 2px solid #ff007f; border-radius: 14px; overflow: hidden; box-shadow: 0 0 45px rgba(255,0,127,0.45); margin: auto;">
+              
+              <!-- モーダルヘッダー -->
+              <div style="background: linear-gradient(90deg, #ff007f, #e11d48, #9333ea); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div class="font-mono" style="font-size: 0.65rem; color: #fbcfe8; font-weight: bold; background: rgba(0,0,0,0.3); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 2px;">
+                    ${chapterInfo.title} · 論破成功
+                  </div>
+                  <h2 class="font-dela" style="font-size: 1.3rem; color: #fff; letter-spacing: 1px;">
+                    論破成功！ セキュリティ真相解明
+                  </h2>
+                </div>
+                <div style="font-size: 2rem;">🏆</div>
+              </div>
+
+              <!-- モーダル本文 -->
+              <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+                <!-- 容疑者の誤った発言 -->
+                <div style="background: #161625; border: 1px solid #2d2d44; border-radius: 8px; padding: 12px;">
+                  <div class="font-mono" style="font-size: 0.7rem; color: #f472b6; font-weight: bold; margin-bottom: 4px;">
+                    ▼ 容疑者（${current.suspect}）の誤った主張
+                  </div>
+                  <div style="font-size: 0.85rem; color: #cbd5e1; font-style: italic;">
+                    ${current.quote}
+                  </div>
+                </div>
+
+                <!-- 決定打となった言弾 -->
+                <div style="background: rgba(255,0,127,0.1); border: 1.5px solid rgba(255,0,127,0.4); border-radius: 8px; padding: 12px;">
+                  <div class="font-mono" style="font-size: 0.7rem; color: #ff79b8; font-weight: bold; margin-bottom: 4px;">
+                    🎯 決定打となった言弾（人的セキュリティ対策70選）
+                  </div>
+                  <div style="font-size: 0.95rem; font-weight: bold; color: #fff;">
+                    ${current.correctKotodamaTitle}
+                  </div>
+                </div>
+
+                <!-- 公式解説 -->
+                <div style="background: #151829; border: 1px solid #2b3252; border-radius: 8px; padding: 14px;">
+                  <div class="font-mono" style="font-size: 0.75rem; color: #fde047; font-weight: bold; margin-bottom: 4px;">
+                    💡【公式対策の解説】
+                  </div>
+                  <div style="font-size: 0.9rem; color: #f1f5f9; line-height: 1.6; font-weight: 500;">
+                    ${current.explanation}
+                  </div>
+                </div>
+
+                <!-- 脅威の詳細 -->
+                <div style="background: #11111d; border: 1px solid #202034; border-radius: 8px; padding: 12px;">
+                  <div style="font-size: 0.7rem; color: #94a3b8; font-weight: bold; margin-bottom: 4px;">
+                    【攻撃手口と被害背景】
+                  </div>
+                  <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.5;">
+                    ${current.threat}
+                  </div>
+                </div>
+              </div>
+
+              <!-- モーダルフッターボタン -->
+              <div style="background: #0a0a14; border-top: 1px solid #1c1c30; padding: 16px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+                <button onclick="sound.playClick(); setView('ARCHIVE');" style="background: #1a1a2e; border: 1px solid #333350; color: #cbd5e1; padding: 10px 16px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">
+                  📖 言弾図鑑を見る
+                </button>
+
+                <button onclick="startRandomTrial()" class="btn-ronpa" style="padding: 10px 24px; font-size: 1rem;">
+                  <span>🔄 新しい裁判を開始</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // ----------------------------------------
+      // ビュー5: ゲームオーバー（GAMEOVER）
+      // ----------------------------------------
+      if (state.view === 'GAMEOVER') {
+        app.innerHTML = `
+          <div style="position: fixed; inset: 0; z-index: 50; background: rgba(5,5,10,0.95); display: flex; align-items: center; justify-content: center; padding: 16px;">
+            <div style="max-width: 440px; width: 100%; background: #150a10; border: 2px solid #ef4444; border-radius: 12px; padding: 28px; text-align: center; box-shadow: 0 0 40px rgba(239,68,68,0.6);" class="animate-shake">
+              <div style="font-size: 3rem; margin-bottom: 12px;">❌</div>
+              <h2 class="font-dela" style="font-size: 1.8rem; color: #fff; margin-bottom: 8px;">論理破綻（GAME OVER）</h2>
+              <p style="font-size: 0.85rem; color: #fca5a5; margin-bottom: 24px; line-height: 1.6;">
+                容疑者に反論され、発言力が尽きてしまった！<br>言弾図鑑で対策を学び直して再挑戦せよ！
+              </p>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button onclick="startRandomTrial()" style="background: #ef4444; color: #fff; font-family: 'Dela Gothic One', sans-serif; padding: 12px; border-radius: 6px; border: none; font-size: 1rem; cursor: pointer;">
+                  再審理を開始
+                </button>
+                <button onclick="sound.playClick(); setView('TITLE');" style="background: #1e1e2d; color: #cbd5e1; padding: 10px; border-radius: 6px; border: 1px solid #333348; font-size: 0.8rem; cursor: pointer;">
+                  タイトルへ戻る
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // ----------------------------------------
+      // ビュー6: 言弾図鑑（ARCHIVE）章別分類表示
+      // ----------------------------------------
+      if (state.view === 'ARCHIVE') {
+        const chaptersList = Object.values(CHAPTERS).map(chap => {
+          const chapScenarios = SCENARIOS.filter(s => s.chapterId === chap.id);
+          const chapKotodama = ALL_KOTODAMA.filter(k => k.chapterId === chap.id);
+
+          const scenariosHtml = chapScenarios.map(sc => {
+            const isSolved = state.solvedIds.includes(sc.id);
+            const originalIndex = SCENARIOS.findIndex(s => s.id === sc.id);
+            return `
+              <div style="background: #090912; border: 1px solid #1d1d32; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 0.85rem; font-weight: bold; color: #fff;">
+                    事件 : ${sc.theme}
+                  </span>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    ${isSolved ? '<span style="font-size: 0.65rem; color: #4ade80; background: #064e3b; padding: 2px 6px; border-radius: 4px;">✔ 論破済</span>' : ''}
+                    <button onclick="startTrialByIndex(${originalIndex})" style="background: rgba(255,0,127,0.25); border: 1px solid #ff007f; color: #ff79b8; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">
+                      裁判する ▶
+                    </button>
+                  </div>
+                </div>
+                <div style="font-size: 0.75rem; color: #94a3b8; font-style: italic; margin-bottom: 6px;">
+                  ${sc.quote}
+                </div>
+                <div style="font-size: 0.75rem; color: #ff79b8; font-weight: bold;">
+                  【特効言弾】${sc.correctKotodamaTitle}
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          const kotodamaListHtml = chapKotodama.map(k => `
+            <div style="background: rgba(255,0,127,0.05); border: 1px solid rgba(255,0,127,0.2); border-radius: 6px; padding: 8px; font-size: 0.75rem;">
+              <span style="color: #ff007f; font-size: 0.8rem; font-weight: bold;">🎯</span>
+              <span style="font-weight: bold; color: #f1f5f9; margin-left: 4px;">${k.shortTitle}</span>
+              <p style="color: #94a3b8; font-size: 0.7rem; margin-top: 3px;">${k.desc}</p>
+            </div>
+          `).join('');
+
+          return `
+            <div style="background: #11111e; border: 1.5px solid #282845; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #24243c; padding-bottom: 8px;">
+                <div>
+                  <h3 class="font-dela" style="font-size: 1.05rem; color: #ff007f;">${chap.title}</h3>
+                  <p style="font-size: 0.75rem; color: #94a3b8;">${chap.description}</p>
+                </div>
+                <span class="font-mono" style="font-size: 0.7rem; background: #1a1a2e; color: #cbd5e1; padding: 4px 8px; border-radius: 4px;">
+                  言弾: ${chapKotodama.length}発 / シナリオ: ${chapScenarios.length}件
+                </span>
+              </div>
+
+              <!-- 収録シナリオ -->
+              <div style="margin-bottom: 12px;">
+                <div class="font-mono" style="font-size: 0.7rem; color: #fde047; font-weight: bold; margin-bottom: 6px;">
+                  【この章の裁判シナリオ】
+                </div>
+                ${scenariosHtml}
+              </div>
+
+              <!-- 章の言弾一覧 -->
+              <div>
+                <div class="font-mono" style="font-size: 0.7rem; color: #f472b6; font-weight: bold; margin-bottom: 6px;">
+                  【この章の言弾シリンダー（選択肢）】
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;">
+                  ${kotodamaListHtml}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        app.innerHTML = `
+          <header class="top-bar">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <button onclick="sound.playClick(); setView('TITLE');" style="background: #1a1a28; border: 1px solid #333348; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
+                ◀ タイトルへ戻る
+              </button>
+              <div>
+                <h2 class="font-dela" style="font-size: 1rem; color: #fff;">言弾図鑑（人的セキュリティ対策70選）</h2>
+                <div class="font-mono" style="font-size: 0.65rem; color: #94a3b8;">章別分類アーカイブ（全4章・全35事件収録）</div>
+              </div>
+            </div>
+            <button onclick="startRandomTrial()" class="btn-ronpa" style="padding: 6px 16px; font-size: 0.85rem;">
+              <span>⚡ ランダム裁判</span>
+            </button>
+          </header>
+
+          <main style="max-width: 900px; margin: 0 auto; width: 100%; padding: 20px;">
+            ${chaptersList}
+          </main>
+        `;
+        return;
+      }
+    }
+
+    // 初回初期化
+    document.addEventListener('DOMContentLoaded', () => {
+      render();
+    });
+
+    // 直ちに描画
+    render();
+  </script>
+</body>
+</html>

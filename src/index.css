@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --neon-pink: #ff007f;
+    --neon-magenta: #e11d48;
+    --cyber-black: #09090e;
+    --court-dark: #12121a;
+  }
+  
+  body {
+    background-color: #07070b;
+    color: #f1f5f9;
+    font-family: 'Noto Sans JP', 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+.font-dela {
+  font-family: 'Dela Gothic One', sans-serif;
+}
+
+.font-mono-code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Danganronpa Diagonal Hazard Pattern */
+.dangan-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 0, 127, 0.15),
+    rgba(255, 0, 127, 0.15) 12px,
+    transparent 12px,
+    transparent 24px
+  );
+}
+
+.dangan-stripes-yellow {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(234, 179, 8, 0.2),
+    rgba(234, 179, 8, 0.2) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+
+.dangan-stripes-subtle {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.03) 15px,
+    transparent 15px,
+    transparent 30px
+  );
+}
+
+/* Speedlines background for "それは違うよ！" */
+.speedlines {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 0, 127, 0.25) 0deg 4deg,
+    transparent 4deg 8deg
+  );
+}
+
+/* Neon Glows */
+.glow-pink {
+  box-shadow: 0 0 25px rgba(255, 0, 127, 0.45);
+}
+
+.glow-pink-lg {
+  box-shadow: 0 0 45px rgba(255, 0, 127, 0.7);
+}
+
+.text-glow-pink {
+  text-shadow: 0 0 12px rgba(255, 0, 127, 0.8), 0 0 24px rgba(255, 0, 127, 0.5);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+}
+
+/* Screen Shake Animations */
+@keyframes shake-violent {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-10px, 8px) rotate(-1.5deg); }
+  30% { transform: translate(12px, -8px) rotate(1.5deg); }
+  45% { transform: translate(-8px, -6px) rotate(-1deg); }
+  60% { transform: translate(9px, 5px) rotate(1deg); }
+  75% { transform: translate(-5px, 3px) rotate(-0.5deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes damage-flash {
+  0% { background-color: rgba(220, 38, 38, 0.6); }
+  100% { background-color: transparent; }
+}
+
+.animate-shake {
+  animation: shake-violent 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.animate-damage {
+  animation: damage-flash 0.5s ease-out;
+}
+
+/* Floating animation for target reticle */
+@keyframes reticle-pulse {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+  50% { transform: scale(1.08) rotate(45deg); opacity: 1; }
+}
+
+.animate-reticle {
+  animation: reticle-pulse 3s ease-in-out infinite;
+}
+
+/* Cylinder rotate animation */
+@keyframes cylinder-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-spin-chamber {
+  animation: cylinder-spin 0.35s ease-out;
+}
