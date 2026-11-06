@@ -171,6 +171,11 @@
       transition: all 0.3s;
     }
 
+    .heart-icon.half {
+      fill: url(#halfHeartGrad) !important;
+      filter: drop-shadow(0 0 6px rgba(255, 0, 127, 0.7));
+    }
+
     .heart-icon.lost {
       fill: #27273a;
       filter: none;
@@ -352,6 +357,16 @@
 
   <!-- アプリメインルートコンテナ -->
   <div id="app" class="app-container"></div>
+
+  <!-- グローバルSVGグラデーション定義（ハート半分表示用） -->
+  <svg width="0" height="0" style="position: absolute; pointer-events: none;">
+    <defs>
+      <linearGradient id="halfHeartGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="50%" stop-color="#ff007f" />
+        <stop offset="50%" stop-color="#27273a" />
+      </linearGradient>
+    </defs>
+  </svg>
 
   <!-- フルアプリケーションJavaScript -->
   <script>
@@ -1278,6 +1293,28 @@
           osc2.stop(now + 0.4);
         } catch(e) {}
       }
+
+      playHeal() {
+        if (this.muted) return;
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          // 明るくきらめく回復アルペジオ音
+          [523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now + idx * 0.07);
+            gain.gain.setValueAtTime(0.18, now + idx * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.07);
+            osc.stop(now + idx * 0.07 + 0.35);
+          });
+        } catch(e) {}
+      }
     }
 
     const sound = new SoundEngine();
@@ -1294,7 +1331,8 @@
       damageFlash: false,
       refutationMessage: null,
       activeFilteredKotodama: [], // 現在の事件に絞り込まれた言弾
-      solvedIds: []
+      solvedIds: [],
+      recoveredHalfHeart: false // 論破成功時のハート回復トラッキング
     };
 
     // 配列の完全シャッフル（Fisher-Yates アルゴリズム）
@@ -1334,18 +1372,21 @@
     }
 
     // 問題の完全ランダム選択（直前と同じ問題の連続を避けてランダム抽出）
-    function startRandomTrial() {
+    function startRandomTrial(keepInfluence = false) {
       sound.playClick();
       let nextIndex = Math.floor(Math.random() * SCENARIOS.length);
       if (SCENARIOS.length > 1 && nextIndex === state.currentScenarioIndex) {
         nextIndex = (nextIndex + 1 + Math.floor(Math.random() * (SCENARIOS.length - 1))) % SCENARIOS.length;
       }
       state.currentScenarioIndex = nextIndex;
-      state.influence = 5;
+      if (!keepInfluence || state.influence <= 0) {
+        state.influence = 5;
+      }
       state.selectedKotodamaId = null;
       state.isBroken = false;
       state.damageFlash = false;
       state.refutationMessage = null;
+      state.recoveredHalfHeart = false;
 
       // 言弾カード群（選択肢）を完全にランダム抽出＆シャッフル
       const current = SCENARIOS[state.currentScenarioIndex];
@@ -1362,6 +1403,7 @@
       state.isBroken = false;
       state.damageFlash = false;
       state.refutationMessage = null;
+      state.recoveredHalfHeart = false;
 
       const current = SCENARIOS[state.currentScenarioIndex];
       state.activeFilteredKotodama = filterKotodamaForScenario(current);
@@ -1387,6 +1429,16 @@
         if (!state.solvedIds.includes(current.id)) {
           state.solvedIds.push(current.id);
         }
+
+        // 論破成功ボーナス：ハートの半分（+0.5）を回復（最大5まで）
+        const prevInfluence = state.influence;
+        state.influence = Math.min(5, +(state.influence + 0.5).toFixed(1));
+        state.recoveredHalfHeart = (state.influence > prevInfluence);
+
+        setTimeout(() => {
+          sound.playHeal();
+        }, 260);
+
         setView('CUTIN');
       } else {
         // 不正解！
@@ -1394,7 +1446,7 @@
         state.damageFlash = true;
         const wrongKoto = ALL_KOTODAMA.find(k => k.id === state.selectedKotodamaId);
         state.refutationMessage = `「${wrongKoto ? wrongKoto.shortTitle : 'その言弾'}」では急所を突けない！ 容疑者に反論されてしまった！`;
-        state.influence -= 1;
+        state.influence = Math.max(0, +(state.influence - 1).toFixed(1));
         render();
 
         setTimeout(() => {
@@ -1500,8 +1552,13 @@
       // ----------------------------------------
       if (state.view === 'TRIAL') {
         const heartsHtml = Array.from({ length: 5 }).map((_, i) => {
-          const isActive = i < state.influence;
-          return `<svg class="heart-icon ${isActive ? '' : 'lost'}" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+          if (state.influence >= i + 1) {
+            return `<svg class="heart-icon" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+          } else if (state.influence >= i + 0.5) {
+            return `<svg class="heart-icon half" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+          } else {
+            return `<svg class="heart-icon lost" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+          }
         }).join('');
 
         const selectedKoto = ALL_KOTODAMA.find(k => k.id === state.selectedKotodamaId);
@@ -1735,10 +1792,19 @@
                 <h1 class="font-dela text-glow-pink" style="font-size: clamp(2.8rem, 8.5vw, 6rem); color: #fff; letter-spacing: 4px; text-shadow: 0 0 25px #ff007f, 0 10px 30px #000, 3px 3px 0 #e11d48, -3px -3px 0 #000;">
                   それは違うよ！
                 </h1>
-                <div style="margin-top: 8px;">
+                <div style="margin-top: 8px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
                   <span class="font-mono" style="font-size: 1.1rem; color: #fde047; font-weight: bold; background: rgba(0,0,0,0.9); padding: 6px 22px; border: 2px solid #ff007f; border-radius: 6px; box-shadow: 0 0 20px #ff007f; display: inline-block;">
                     ★ BREAK!! 論破成功 ★
                   </span>
+                  ${state.recoveredHalfHeart ? `
+                    <span class="font-mono" style="font-size: 0.92rem; color: #ff79b8; font-weight: bold; background: rgba(255,0,127,0.3); border: 1.5px solid #ff007f; padding: 4px 18px; border-radius: 20px; box-shadow: 0 0 18px rgba(255,0,127,0.7); display: inline-flex; align-items: center; gap: 6px;">
+                      💖 論破成功ボーナス：発言力（ハート半分）回復！ [${state.influence}/5]
+                    </span>
+                  ` : `
+                    <span class="font-mono" style="font-size: 0.85rem; color: #a7f3d0; background: rgba(16,185,129,0.25); border: 1px solid #10b981; padding: 3px 14px; border-radius: 20px;">
+                      ✨ 発言力 MAX [5/5]
+                    </span>
+                  `}
                 </div>
               </div>
             </div>
@@ -1774,6 +1840,37 @@
 
               <!-- モーダル本文 -->
               <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+                <!-- 発言力回復ステータス -->
+                <div style="background: rgba(255,0,127,0.12); border: 1.5px solid rgba(255,0,127,0.4); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.4rem;">💖</span>
+                    <div>
+                      <div class="font-mono" style="font-size: 0.72rem; color: #ff79b8; font-weight: bold;">
+                        論破成功ボーナス適用
+                      </div>
+                      <div style="font-size: 0.85rem; color: #f1f5f9; font-weight: bold;">
+                        ${state.recoveredHalfHeart ? '発言力が半分回復しました！（+0.5）' : '発言力は既に最大値（5/5）です'}
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                    <span class="font-mono" style="font-size: 0.7rem; color: #cbd5e1; font-weight: bold; margin-bottom: 3px;">
+                      現在の発言力 : ${state.influence} / 5
+                    </span>
+                    <div style="display: flex; gap: 4px;">
+                      ${Array.from({ length: 5 }).map((_, i) => {
+                        if (state.influence >= i + 1) {
+                          return `<svg class="heart-icon" style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+                        } else if (state.influence >= i + 0.5) {
+                          return `<svg class="heart-icon half" style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+                        } else {
+                          return `<svg class="heart-icon lost" style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+                        }
+                      }).join('')}
+                    </div>
+                  </div>
+                </div>
+
                 <!-- 容疑者の誤った発言 -->
                 <div style="background: #161625; border: 1px solid #2d2d44; border-radius: 8px; padding: 12px;">
                   <div class="font-mono" style="font-size: 0.7rem; color: #f472b6; font-weight: bold; margin-bottom: 4px;">
@@ -1821,8 +1918,8 @@
                   📖 言弾図鑑を見る
                 </button>
 
-                <button onclick="startRandomTrial()" class="btn-ronpa" style="padding: 10px 24px; font-size: 1rem;">
-                  <span>🔄 新しい裁判を開始</span>
+                <button onclick="startRandomTrial(true)" class="btn-ronpa" style="padding: 10px 24px; font-size: 1rem;">
+                  <span>🔄 次の裁判へ進む（発言力引継ぎ）</span>
                 </button>
               </div>
 
