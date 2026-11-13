@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' ws: wss:; object-src 'none'; base-uri 'self'; form-action 'none';" />
+  <meta name="referrer" content="no-referrer" />
   <title>セキュリティ学級裁判 - 人的セキュリティ70選</title>
   <meta name="description" content="ダンガンロンパ風のサイバー＆ポップな演出で学ぶ、人的セキュリティ対策70選の学級裁判ゲーム。言弾（コトダマ）を装填し、誤った認識を論破せよ！" />
   <meta property="og:title" content="セキュリティ学級裁判 - 人的セキュリティ70選" />
@@ -370,9 +372,57 @@
 
   <!-- フルアプリケーションJavaScript -->
   <script>
-    // ==========================================
-    // 1. 章（カテゴリ）の分類と全言弾データベース
-    // ==========================================
+    (() => {
+      'use strict';
+
+      // ==========================================
+      // 0. セキュリティ基盤ユーティリティ（Strix準拠ハードニング）
+      // ==========================================
+      const HTML_ESCAPE_MAP = Object.freeze({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '`': '&#96;'
+      });
+
+      function escapeHtml(value) {
+        if (value === null || value === undefined) return '';
+        return String(value).replace(/[&<>"'`]/g, (ch) => HTML_ESCAPE_MAP[ch]);
+      }
+
+      function deepFreeze(obj) {
+        if (obj === null || typeof obj !== 'object') return obj;
+        Object.freeze(obj);
+        for (const key of Object.keys(obj)) {
+          const val = obj[key];
+          if (val !== null && typeof val === 'object' && !Object.isFrozen(val)) {
+            deepFreeze(val);
+          }
+        }
+        return obj;
+      }
+
+      function secureRandomInt(maxExclusive) {
+        if (!Number.isInteger(maxExclusive) || maxExclusive <= 0) return 0;
+        if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+          const range = 0x100000000;
+          const limit = range - (range % maxExclusive);
+          const buf = new Uint32Array(1);
+          let rand = 0;
+          do {
+            window.crypto.getRandomValues(buf);
+            rand = buf[0];
+          } while (rand >= limit);
+          return rand % maxExclusive;
+        }
+        return Math.floor(Math.random() * maxExclusive);
+      }
+
+      // ==========================================
+      // 1. 章（カテゴリ）の分類と全言弾データベース
+      // ==========================================
     // 章カテゴリ:
     // ch1: 第1章：基本・認証（基本ルール、パスワード保管、離席ロック）
     // ch2: 第2章：Web・攻撃対策（ClickFix攻撃、偽修復、生成AI利用ルール）
@@ -1174,6 +1224,11 @@
       }
     ];
 
+    // 改ざん・プロトタイプ汚染防止のためマスターデータを不変化
+    deepFreeze(CHAPTERS);
+    deepFreeze(ALL_KOTODAMA);
+    deepFreeze(SCENARIOS);
+
     // ==========================================
     // 2. Web Audio API 音響シンセサイザー（完全ローカル）
     // ==========================================
@@ -1322,12 +1377,32 @@
     // ==========================================
     // 3. ゲーム状態管理 ＆ 完全ランダム抽出ロジック
     // ==========================================
+    const VALID_VIEWS = new Set(['TITLE', 'TRIAL', 'CUTIN', 'EXPLANATION', 'ARCHIVE', 'GAMEOVER']);
+    let pendingTimers = [];
+
+    function clearPendingTimers() {
+      for (const timerId of pendingTimers) {
+        clearTimeout(timerId);
+      }
+      pendingTimers = [];
+    }
+
+    function scheduleSafeTimeout(fn, delayMs) {
+      const id = setTimeout(() => {
+        pendingTimers = pendingTimers.filter(t => t !== id);
+        fn();
+      }, delayMs);
+      pendingTimers.push(id);
+      return id;
+    }
+
     const state = {
       view: 'TITLE', // 'TITLE' | 'TRIAL' | 'CUTIN' | 'EXPLANATION' | 'ARCHIVE' | 'GAMEOVER'
       currentScenarioIndex: 0,
       influence: 5,
       selectedKotodamaId: null,
       isBroken: false,
+      isResolving: false,
       damageFlash: false,
       refutationMessage: null,
       activeFilteredKotodama: [], // 現在の事件に絞り込まれた言弾
@@ -1335,11 +1410,11 @@
       recoveredHalfHeart: false // 論破成功時のハート回復トラッキング
     };
 
-    // 配列の完全シャッフル（Fisher-Yates アルゴリズム）
+    // 配列の完全シャッフル（CSPRNG + Fisher-Yates アルゴリズム）
     function shuffleArray(arr) {
       const copy = [...arr];
       for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = secureRandomInt(i + 1);
         const temp = copy[i];
         copy[i] = copy[j];
         copy[j] = temp;
@@ -1359,24 +1434,28 @@
 
       // ダミー候補をランダムシャッフルして3〜4枚選出
       const shuffledDummies = shuffleArray(dummyCandidates);
-      const selectedDummies = shuffledDummies.slice(0, 3 + Math.floor(Math.random() * 2)); // 3または4枚
-      const combined = [correctCard, ...selectedDummies];
+      const selectedDummies = shuffledDummies.slice(0, 3 + secureRandomInt(2)); // 3または4枚
+      const combined = correctCard ? [correctCard, ...selectedDummies] : selectedDummies;
 
       // 画面上の選択肢の並び順も完全にランダム化
       return shuffleArray(combined);
     }
 
     function setView(newView) {
+      if (!VALID_VIEWS.has(newView)) return;
+      clearPendingTimers();
+      state.isResolving = false;
       state.view = newView;
       render();
     }
 
     // 問題の完全ランダム選択（直前と同じ問題の連続を避けてランダム抽出）
     function startRandomTrial(keepInfluence = false) {
+      clearPendingTimers();
       sound.playClick();
-      let nextIndex = Math.floor(Math.random() * SCENARIOS.length);
+      let nextIndex = secureRandomInt(SCENARIOS.length);
       if (SCENARIOS.length > 1 && nextIndex === state.currentScenarioIndex) {
-        nextIndex = (nextIndex + 1 + Math.floor(Math.random() * (SCENARIOS.length - 1))) % SCENARIOS.length;
+        nextIndex = (nextIndex + 1 + secureRandomInt(SCENARIOS.length - 1)) % SCENARIOS.length;
       }
       state.currentScenarioIndex = nextIndex;
       if (!keepInfluence || state.influence <= 0) {
@@ -1384,6 +1463,7 @@
       }
       state.selectedKotodamaId = null;
       state.isBroken = false;
+      state.isResolving = false;
       state.damageFlash = false;
       state.refutationMessage = null;
       state.recoveredHalfHeart = false;
@@ -1396,11 +1476,14 @@
     }
 
     function startTrialByIndex(idx) {
+      if (!Number.isInteger(idx) || idx < 0 || idx >= SCENARIOS.length) return;
+      clearPendingTimers();
       sound.playClick();
       state.currentScenarioIndex = idx;
       state.influence = 5;
       state.selectedKotodamaId = null;
       state.isBroken = false;
+      state.isResolving = false;
       state.damageFlash = false;
       state.refutationMessage = null;
       state.recoveredHalfHeart = false;
@@ -1412,17 +1495,23 @@
     }
 
     function selectKotodama(id) {
+      if (state.view !== 'TRIAL' || state.isResolving) return;
+      const isValidChoice = state.activeFilteredKotodama.some(k => k.id === id);
+      if (!isValidChoice) return;
       sound.playClick();
       state.selectedKotodamaId = id;
       render();
     }
 
     function fireRonpa() {
-      if (!state.selectedKotodamaId) return;
+      if (state.view !== 'TRIAL' || state.isResolving || !state.selectedKotodamaId) return;
+      const isValidChoice = state.activeFilteredKotodama.some(k => k.id === state.selectedKotodamaId);
+      if (!isValidChoice) return;
 
       const current = SCENARIOS[state.currentScenarioIndex];
       if (state.selectedKotodamaId === current.correctKotodamaId) {
         // 正解！
+        state.isResolving = true;
         sound.playBreak();
         state.isBroken = true;
         state.refutationMessage = null;
@@ -1433,29 +1522,35 @@
         // 論破成功ボーナス：ハートの半分（+0.5）を回復（最大5まで）
         const prevInfluence = state.influence;
         state.influence = Math.min(5, +(state.influence + 0.5).toFixed(1));
-        state.recoveredHalfHeart = (state.influence > prevInfluence);
-
-        setTimeout(() => {
-          sound.playHeal();
-        }, 260);
+        const didRecover = (state.influence > prevInfluence);
 
         setView('CUTIN');
+        state.recoveredHalfHeart = didRecover;
+        render();
+
+        scheduleSafeTimeout(() => {
+          sound.playHeal();
+        }, 260);
       } else {
         // 不正解！
+        state.isResolving = true;
         sound.playDamage();
         state.damageFlash = true;
-        const wrongKoto = ALL_KOTODAMA.find(k => k.id === state.selectedKotodamaId);
+        const wrongKoto = state.activeFilteredKotodama.find(k => k.id === state.selectedKotodamaId);
         state.refutationMessage = `「${wrongKoto ? wrongKoto.shortTitle : 'その言弾'}」では急所を突けない！ 容疑者に反論されてしまった！`;
         state.influence = Math.max(0, +(state.influence - 1).toFixed(1));
         render();
 
-        setTimeout(() => {
+        scheduleSafeTimeout(() => {
           state.damageFlash = false;
+          if (state.influence > 0) {
+            state.isResolving = false;
+          }
           render();
         }, 450);
 
         if (state.influence <= 0) {
-          setTimeout(() => {
+          scheduleSafeTimeout(() => {
             setView('GAMEOVER');
           }, 700);
         }
@@ -1463,13 +1558,26 @@
     }
 
     // ==========================================
-    // 4. HTMLレンダリングエンジン
+    // 4. HTMLレンダリングエンジン（XSS対策エスケープ・イベント委譲）
     // ==========================================
+    function renderHeartsHtml(sizeStyle = '') {
+      const styleAttr = sizeStyle ? ` style="${escapeHtml(sizeStyle)}"` : '';
+      return Array.from({ length: 5 }).map((_, i) => {
+        if (state.influence >= i + 1) {
+          return `<svg class="heart-icon"${styleAttr} viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        } else if (state.influence >= i + 0.5) {
+          return `<svg class="heart-icon half"${styleAttr} viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        } else {
+          return `<svg class="heart-icon lost"${styleAttr} viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        }
+      }).join('');
+    }
+
     function render() {
       const app = document.getElementById('app');
       if (!app) return;
 
-      const current = SCENARIOS[state.currentScenarioIndex];
+      const current = SCENARIOS[state.currentScenarioIndex] || SCENARIOS[0];
       const chapterInfo = CHAPTERS[current.chapterId] || { title: '通常審理', description: '' };
 
       // ----------------------------------------
@@ -1486,7 +1594,7 @@
               <span class="font-dela" style="font-size: 1.1rem; color: #fff; letter-spacing: 1px;">人的セキュリティ学級裁判</span>
               <span class="font-mono" style="font-size: 0.75rem; color: #ff007f; font-weight: bold;">/ 70 GUIDELINES</span>
             </div>
-            <button onclick="sound.muted = !sound.muted; sound.playClick(); render();" style="background: #1e1e2d; border: 1px solid #333348; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+            <button type="button" data-action="toggle-mute" style="background: #1e1e2d; border: 1px solid #333348; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
               ${sound.muted ? '🔇 サウンドOFF' : '🔊 サウンドON'}
             </button>
           </header>
@@ -1530,11 +1638,11 @@
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 14px; max-width: 380px; margin: 0 auto 24px;">
-              <button onclick="startRandomTrial()" class="btn-ronpa animate-pulse-btn" style="width: 100%; font-size: 1.25rem;">
+              <button type="button" data-action="start-random" class="btn-ronpa animate-pulse-btn" style="width: 100%; font-size: 1.25rem;">
                 <span>⚡ 新しい裁判を開始</span>
               </button>
 
-              <button onclick="sound.playClick(); setView('ARCHIVE');" style="background: #151522; border: 1.5px solid #ff007f; color: #ff79b8; font-family: 'Dela Gothic One', sans-serif; font-size: 0.95rem; padding: 12px; border-radius: 8px; cursor: pointer;">
+              <button type="button" data-action="set-view" data-view="ARCHIVE" data-sound="click" style="background: #151522; border: 1.5px solid #ff007f; color: #ff79b8; font-family: 'Dela Gothic One', sans-serif; font-size: 0.95rem; padding: 12px; border-radius: 8px; cursor: pointer;">
                 📖 章別言弾（対策70選）図鑑を見る
               </button>
             </div>
@@ -1551,17 +1659,8 @@
       // ビュー2: 裁判中画面（TRIAL - 絞り込み言弾シリンダー）
       // ----------------------------------------
       if (state.view === 'TRIAL') {
-        const heartsHtml = Array.from({ length: 5 }).map((_, i) => {
-          if (state.influence >= i + 1) {
-            return `<svg class="heart-icon" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-          } else if (state.influence >= i + 0.5) {
-            return `<svg class="heart-icon half" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-          } else {
-            return `<svg class="heart-icon lost" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-          }
-        }).join('');
-
-        const selectedKoto = ALL_KOTODAMA.find(k => k.id === state.selectedKotodamaId);
+        const heartsHtml = renderHeartsHtml();
+        const selectedKoto = state.activeFilteredKotodama.find(k => k.id === state.selectedKotodamaId);
 
         // 絞り込まれた4〜5枚の言弾を手札（トランプ風ファン配置）形式でレンダリング
         const N = state.activeFilteredKotodama.length;
@@ -1580,7 +1679,11 @@
             <div 
               class="koto-card ${isSel ? 'active' : ''}" 
               style="${fanStyle}"
-              onclick="selectKotodama('${k.id}')"
+              role="button"
+              tabindex="0"
+              aria-pressed="${isSel ? 'true' : 'false'}"
+              data-action="select-kotodama"
+              data-id="${escapeHtml(k.id)}"
             >
               
               <!-- カード上部ヘッダー：言弾バッジ ＋ 装填ステータス -->
@@ -1600,14 +1703,14 @@
               <div style="background: ${isSel ? 'rgba(255,0,127,0.18)' : 'rgba(0,0,0,0.35)'}; border: 1px solid ${isSel ? 'rgba(255,0,127,0.6)' : 'rgba(255,255,255,0.08)'}; border-radius: 8px; padding: 8px 9px; margin-bottom: 6px; position: relative; overflow: hidden;">
                 <div style="position: absolute; right: 4px; bottom: 2px; font-size: 1.5rem; opacity: 0.12; pointer-events: none;">🎯</div>
                 <div style="font-size: 0.82rem; font-weight: bold; color: ${isSel ? '#ffffff' : '#f8fafc'}; line-height: 1.35; text-shadow: ${isSel ? '0 0 12px rgba(255,0,127,0.9)' : 'none'};">
-                  ${k.shortTitle}
+                  ${escapeHtml(k.shortTitle)}
                 </div>
               </div>
 
               <!-- カード下部：解説・効果テキストボックス -->
               <div style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 7px 8px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
                 <p style="font-size: 0.68rem; color: ${isSel ? '#fed7aa' : '#94a3b8'}; line-height: 1.42; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 0;">
-                  ${k.desc}
+                  ${escapeHtml(k.desc)}
                 </p>
               </div>
 
@@ -1629,26 +1732,26 @@
           <!-- 上部ヘッダー -->
           <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <button onclick="sound.playClick(); setView('TITLE');" style="background: #1a1a28; border: 1px solid #333348; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
+              <button type="button" data-action="set-view" data-view="TITLE" data-sound="click" style="background: #1a1a28; border: 1px solid #333348; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
                 ◀ 中止
               </button>
               <div>
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <span class="font-mono" style="font-size: 0.65rem; background: rgba(255,0,127,0.2); border: 1px solid #ff007f; color: #ff79b8; padding: 2px 8px; border-radius: 4px; font-weight: bold;">
-                    ${chapterInfo.title}
+                    ${escapeHtml(chapterInfo.title)}
                   </span>
                 </div>
-                <div style="font-size: 0.85rem; font-weight: bold; color: #fff; margin-top: 2px;">${current.theme}</div>
+                <div style="font-size: 0.85rem; font-weight: bold; color: #fff; margin-top: 2px;">${escapeHtml(current.theme)}</div>
               </div>
             </div>
 
             <!-- 発言力ゲージ -->
             <div style="display: flex; flex-direction: column; align-items: center;">
-              <span class="font-mono" style="font-size: 0.65rem; color: #94a3b8; font-weight: bold; margin-bottom: 2px;">INFLUENCE (${state.influence}/5)</span>
+              <span class="font-mono" style="font-size: 0.65rem; color: #94a3b8; font-weight: bold; margin-bottom: 2px;">INFLUENCE (${escapeHtml(state.influence)}/5)</span>
               <div style="display: flex; gap: 4px;">${heartsHtml}</div>
             </div>
 
-            <button onclick="sound.muted = !sound.muted; sound.playClick(); render();" style="background: #1e1e2d; border: 1px solid #333348; color: #cbd5e1; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+            <button type="button" data-action="toggle-mute" style="background: #1e1e2d; border: 1px solid #333348; color: #cbd5e1; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
               ${sound.muted ? '🔇' : '🔊'}
             </button>
           </header>
@@ -1657,9 +1760,9 @@
           <main style="position: relative; z-index: 5; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 16px; max-width: 860px; margin: 0 auto; width: 100%;">
             
             ${state.refutationMessage ? `
-              <div style="width: 100%; max-width: 600px; background: rgba(153, 27, 27, 0.95); border: 2px solid #ef4444; border-radius: 8px; padding: 10px 16px; margin-bottom: 12px; text-align: center; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);" class="animate-shake">
+              <div style="width: 100%; max-width: 600px; background: rgba(153, 27, 27, 0.95); border: 2px solid #ef4444; border-radius: 8px; padding: 10px 16px; margin-bottom: 12px; text-align: center; box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);" class="${state.damageFlash ? 'animate-shake' : ''}">
                 <div style="color: #fca5a5; font-size: 0.8rem; font-weight: bold; margin-bottom: 2px;">⚠️【反論された！ 発言力減少】</div>
-                <div style="color: #fff; font-size: 0.75rem;">${state.refutationMessage}</div>
+                <div style="color: #fff; font-size: 0.75rem;">${escapeHtml(state.refutationMessage)}</div>
               </div>
             ` : ''}
 
@@ -1682,10 +1785,10 @@
 
             <!-- 証言台ネームプレート -->
             <div style="background: linear-gradient(90deg, #161625, #222238, #161625); border: 2px solid rgba(255,0,127,0.6); border-radius: 6px 6px 0 0; padding: 4px 20px; font-size: 0.75rem; font-weight: bold; color: #fff; margin-bottom: 2px;">
-              証言台 : <span style="color: #f472b6;">${current.suspect}</span>
+              証言台 : <span style="color: #f472b6;">${escapeHtml(current.suspect)}</span>
             </div>
             <div style="font-size: 0.7rem; color: #ff79b8; margin-bottom: 12px;">
-              〈${current.title}〉
+              〈${escapeHtml(current.title)}〉
             </div>
 
             <!-- 容疑者の発言枠 -->
@@ -1695,15 +1798,15 @@
               </div>
 
               <div style="font-size: 1.15rem; font-weight: bold; color: #f8fafc; line-height: 1.7; margin-bottom: 14px; padding-top: 4px;">
-                ${current.quote}
+                ${escapeHtml(current.quote)}
               </div>
 
               <div style="border-top: 1px solid #27273f; padding-top: 10px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;">
                 <div style="font-size: 0.8rem; color: #f472b6;" class="font-mono">
-                  矛盾点 : <span style="font-weight: bold; text-decoration: underline wavy #ff007f; color: #fde047;">「${current.contradiction}」</span>
+                  矛盾点 : <span style="font-weight: bold; text-decoration: underline wavy #ff007f; color: #fde047;">「${escapeHtml(current.contradiction)}」</span>
                 </div>
                 <span class="font-mono" style="font-size: 0.65rem; color: #94a3b8; background: #161625; padding: 2px 6px; border-radius: 4px;">
-                  対象カテゴリ: ${chapterInfo.title}
+                  対象カテゴリ: ${escapeHtml(chapterInfo.title)}
                 </span>
               </div>
             </div>
@@ -1723,12 +1826,12 @@
                       装填ステータス : ${selectedKoto ? '<span style="color: #fde047; font-weight: bold;">装填完了 (TARGET LOCKED)</span>' : '<span style="color: #94a3b8;">未装填 (言弾を選択してください)</span>'}
                     </div>
                     <div style="font-size: 0.85rem; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 460px;">
-                      ${selectedKoto ? selectedKoto.title : '【' + chapterInfo.title + '】の言弾から正解を選択してください'}
+                      ${selectedKoto ? escapeHtml(selectedKoto.title) : '【' + escapeHtml(chapterInfo.title) + '】の言弾から正解を選択してください'}
                     </div>
                   </div>
                 </div>
 
-                <button onclick="fireRonpa()" class="btn-ronpa" ${state.selectedKotodamaId ? '' : 'disabled'}>
+                <button type="button" data-action="fire-ronpa" class="btn-ronpa" ${state.selectedKotodamaId && !state.isResolving ? '' : 'disabled'}>
                   <span>🔥 論破！</span>
                 </button>
               </div>
@@ -1737,7 +1840,7 @@
               <div style="width: 100%; overflow: visible; display: flex; flex-direction: column; align-items: center;">
                 <div style="width: 100%; max-width: 860px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; padding: 0 8px;">
                   <span class="font-mono" style="font-size: 0.7rem; color: #f472b6; font-weight: bold;">
-                    ▼ 手札言弾【${chapterInfo.title} 関連対策：全${state.activeFilteredKotodama.length}発】
+                    ▼ 手札言弾【${escapeHtml(chapterInfo.title)} 関連対策：全${state.activeFilteredKotodama.length}発】
                   </span>
                   <span style="font-size: 0.65rem; color: #94a3b8;">
                     ※カードをクリックして装填し、「論破！」を突きつけてください
@@ -1758,7 +1861,7 @@
       // ----------------------------------------
       if (state.view === 'CUTIN') {
         app.innerHTML = `
-          <div onclick="setView('EXPLANATION')" style="position: fixed; inset: 0; z-index: 100; background: rgba(5,5,10,0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;" class="animate-shake">
+          <div role="button" tabindex="0" data-action="set-view" data-view="EXPLANATION" style="position: fixed; inset: 0; z-index: 100; background: rgba(5,5,10,0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;" class="animate-shake">
             <div class="speedlines" style="position: absolute; inset: 0; opacity: 0.6; pointer-events: none;"></div>
             <div class="dangan-stripes" style="position: absolute; inset: 0; opacity: 0.4; pointer-events: none;"></div>
 
@@ -1798,7 +1901,7 @@
                   </span>
                   ${state.recoveredHalfHeart ? `
                     <span class="font-mono" style="font-size: 0.92rem; color: #ff79b8; font-weight: bold; background: rgba(255,0,127,0.3); border: 1.5px solid #ff007f; padding: 4px 18px; border-radius: 20px; box-shadow: 0 0 18px rgba(255,0,127,0.7); display: inline-flex; align-items: center; gap: 6px;">
-                      💖 論破成功ボーナス：発言力（ハート半分）回復！ [${state.influence}/5]
+                      💖 論破成功ボーナス：発言力（ハート半分）回復！ [${escapeHtml(state.influence)}/5]
                     </span>
                   ` : `
                     <span class="font-mono" style="font-size: 0.85rem; color: #a7f3d0; background: rgba(16,185,129,0.25); border: 1px solid #10b981; padding: 3px 14px; border-radius: 20px;">
@@ -1829,7 +1932,7 @@
               <div style="background: linear-gradient(90deg, #ff007f, #e11d48, #9333ea); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
                 <div>
                   <div class="font-mono" style="font-size: 0.65rem; color: #fbcfe8; font-weight: bold; background: rgba(0,0,0,0.3); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 2px;">
-                    ${chapterInfo.title} · 論破成功
+                    ${escapeHtml(chapterInfo.title)} · 論破成功
                   </div>
                   <h2 class="font-dela" style="font-size: 1.3rem; color: #fff; letter-spacing: 1px;">
                     論破成功！ セキュリティ真相解明
@@ -1855,18 +1958,10 @@
                   </div>
                   <div style="display: flex; flex-direction: column; align-items: flex-end;">
                     <span class="font-mono" style="font-size: 0.7rem; color: #cbd5e1; font-weight: bold; margin-bottom: 3px;">
-                      現在の発言力 : ${state.influence} / 5
+                      現在の発言力 : ${escapeHtml(state.influence)} / 5
                     </span>
                     <div style="display: flex; gap: 4px;">
-                      ${Array.from({ length: 5 }).map((_, i) => {
-                        if (state.influence >= i + 1) {
-                          return `<svg class="heart-icon" style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-                        } else if (state.influence >= i + 0.5) {
-                          return `<svg class="heart-icon half" style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-                        } else {
-                          return `<svg class="heart-icon lost" style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-                        }
-                      }).join('')}
+                      ${renderHeartsHtml('width: 18px; height: 18px;')}
                     </div>
                   </div>
                 </div>
@@ -1874,10 +1969,10 @@
                 <!-- 容疑者の誤った発言 -->
                 <div style="background: #161625; border: 1px solid #2d2d44; border-radius: 8px; padding: 12px;">
                   <div class="font-mono" style="font-size: 0.7rem; color: #f472b6; font-weight: bold; margin-bottom: 4px;">
-                    ▼ 容疑者（${current.suspect}）の誤った主張
+                    ▼ 容疑者（${escapeHtml(current.suspect)}）の誤った主張
                   </div>
                   <div style="font-size: 0.85rem; color: #cbd5e1; font-style: italic;">
-                    ${current.quote}
+                    ${escapeHtml(current.quote)}
                   </div>
                 </div>
 
@@ -1887,7 +1982,7 @@
                     🎯 決定打となった言弾（人的セキュリティ対策70選）
                   </div>
                   <div style="font-size: 0.95rem; font-weight: bold; color: #fff;">
-                    ${current.correctKotodamaTitle}
+                    ${escapeHtml(current.correctKotodamaTitle)}
                   </div>
                 </div>
 
@@ -1897,7 +1992,7 @@
                     💡【公式対策の解説】
                   </div>
                   <div style="font-size: 0.9rem; color: #f1f5f9; line-height: 1.6; font-weight: 500;">
-                    ${current.explanation}
+                    ${escapeHtml(current.explanation)}
                   </div>
                 </div>
 
@@ -1907,18 +2002,18 @@
                     【攻撃手口と被害背景】
                   </div>
                   <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.5;">
-                    ${current.threat}
+                    ${escapeHtml(current.threat)}
                   </div>
                 </div>
               </div>
 
               <!-- モーダルフッターボタン -->
               <div style="background: #0a0a14; border-top: 1px solid #1c1c30; padding: 16px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
-                <button onclick="sound.playClick(); setView('ARCHIVE');" style="background: #1a1a2e; border: 1px solid #333350; color: #cbd5e1; padding: 10px 16px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">
+                <button type="button" data-action="set-view" data-view="ARCHIVE" data-sound="click" style="background: #1a1a2e; border: 1px solid #333350; color: #cbd5e1; padding: 10px 16px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; cursor: pointer;">
                   📖 言弾図鑑を見る
                 </button>
 
-                <button onclick="startRandomTrial(true)" class="btn-ronpa" style="padding: 10px 24px; font-size: 1rem;">
+                <button type="button" data-action="start-random" data-keep-influence="true" class="btn-ronpa" style="padding: 10px 24px; font-size: 1rem;">
                   <span>🔄 次の裁判へ進む（発言力引継ぎ）</span>
                 </button>
               </div>
@@ -1942,10 +2037,10 @@
                 容疑者に反論され、発言力が尽きてしまった！<br>言弾図鑑で対策を学び直して再挑戦せよ！
               </p>
               <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button onclick="startRandomTrial()" style="background: #ef4444; color: #fff; font-family: 'Dela Gothic One', sans-serif; padding: 12px; border-radius: 6px; border: none; font-size: 1rem; cursor: pointer;">
+                <button type="button" data-action="start-random" style="background: #ef4444; color: #fff; font-family: 'Dela Gothic One', sans-serif; padding: 12px; border-radius: 6px; border: none; font-size: 1rem; cursor: pointer;">
                   再審理を開始
                 </button>
-                <button onclick="sound.playClick(); setView('TITLE');" style="background: #1e1e2d; color: #cbd5e1; padding: 10px; border-radius: 6px; border: 1px solid #333348; font-size: 0.8rem; cursor: pointer;">
+                <button type="button" data-action="set-view" data-view="TITLE" data-sound="click" style="background: #1e1e2d; color: #cbd5e1; padding: 10px; border-radius: 6px; border: 1px solid #333348; font-size: 0.8rem; cursor: pointer;">
                   タイトルへ戻る
                 </button>
               </div>
@@ -1970,20 +2065,20 @@
               <div style="background: #090912; border: 1px solid #1d1d32; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <span style="font-size: 0.85rem; font-weight: bold; color: #fff;">
-                    事件 : ${sc.theme}
+                    事件 : ${escapeHtml(sc.theme)}
                   </span>
                   <div style="display: flex; align-items: center; gap: 6px;">
                     ${isSolved ? '<span style="font-size: 0.65rem; color: #4ade80; background: #064e3b; padding: 2px 6px; border-radius: 4px;">✔ 論破済</span>' : ''}
-                    <button onclick="startTrialByIndex(${originalIndex})" style="background: rgba(255,0,127,0.25); border: 1px solid #ff007f; color: #ff79b8; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">
+                    <button type="button" data-action="start-by-index" data-index="${originalIndex}" style="background: rgba(255,0,127,0.25); border: 1px solid #ff007f; color: #ff79b8; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; cursor: pointer;">
                       裁判する ▶
                     </button>
                   </div>
                 </div>
                 <div style="font-size: 0.75rem; color: #94a3b8; font-style: italic; margin-bottom: 6px;">
-                  ${sc.quote}
+                  ${escapeHtml(sc.quote)}
                 </div>
                 <div style="font-size: 0.75rem; color: #ff79b8; font-weight: bold;">
-                  【特効言弾】${sc.correctKotodamaTitle}
+                  【特効言弾】${escapeHtml(sc.correctKotodamaTitle)}
                 </div>
               </div>
             `;
@@ -1992,8 +2087,8 @@
           const kotodamaListHtml = chapKotodama.map(k => `
             <div style="background: rgba(255,0,127,0.05); border: 1px solid rgba(255,0,127,0.2); border-radius: 6px; padding: 8px; font-size: 0.75rem;">
               <span style="color: #ff007f; font-size: 0.8rem; font-weight: bold;">🎯</span>
-              <span style="font-weight: bold; color: #f1f5f9; margin-left: 4px;">${k.shortTitle}</span>
-              <p style="color: #94a3b8; font-size: 0.7rem; margin-top: 3px;">${k.desc}</p>
+              <span style="font-weight: bold; color: #f1f5f9; margin-left: 4px;">${escapeHtml(k.shortTitle)}</span>
+              <p style="color: #94a3b8; font-size: 0.7rem; margin-top: 3px;">${escapeHtml(k.desc)}</p>
             </div>
           `).join('');
 
@@ -2001,8 +2096,8 @@
             <div style="background: #11111e; border: 1.5px solid #282845; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #24243c; padding-bottom: 8px;">
                 <div>
-                  <h3 class="font-dela" style="font-size: 1.05rem; color: #ff007f;">${chap.title}</h3>
-                  <p style="font-size: 0.75rem; color: #94a3b8;">${chap.description}</p>
+                  <h3 class="font-dela" style="font-size: 1.05rem; color: #ff007f;">${escapeHtml(chap.title)}</h3>
+                  <p style="font-size: 0.75rem; color: #94a3b8;">${escapeHtml(chap.description)}</p>
                 </div>
                 <span class="font-mono" style="font-size: 0.7rem; background: #1a1a2e; color: #cbd5e1; padding: 4px 8px; border-radius: 4px;">
                   言弾: ${chapKotodama.length}発 / シナリオ: ${chapScenarios.length}件
@@ -2033,7 +2128,7 @@
         app.innerHTML = `
           <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <button onclick="sound.playClick(); setView('TITLE');" style="background: #1a1a28; border: 1px solid #333348; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
+              <button type="button" data-action="set-view" data-view="TITLE" data-sound="click" style="background: #1a1a28; border: 1px solid #333348; color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: bold;">
                 ◀ タイトルへ戻る
               </button>
               <div>
@@ -2041,7 +2136,7 @@
                 <div class="font-mono" style="font-size: 0.65rem; color: #94a3b8;">章別分類アーカイブ（全4章・全35事件収録）</div>
               </div>
             </div>
-            <button onclick="startRandomTrial()" class="btn-ronpa" style="padding: 6px 16px; font-size: 0.85rem;">
+            <button type="button" data-action="start-random" class="btn-ronpa" style="padding: 6px 16px; font-size: 0.85rem;">
               <span>⚡ ランダム裁判</span>
             </button>
           </header>
@@ -2054,13 +2149,68 @@
       }
     }
 
-    // 初回初期化
-    document.addEventListener('DOMContentLoaded', () => {
-      render();
-    });
+    function handleActionElement(targetEl) {
+      if (!targetEl) return;
+      const action = targetEl.dataset.action;
+      if (targetEl.dataset.sound === 'click') {
+        sound.playClick();
+      }
+      switch (action) {
+        case 'toggle-mute':
+          sound.muted = !sound.muted;
+          sound.playClick();
+          render();
+          break;
+        case 'set-view':
+          setView(targetEl.dataset.view);
+          break;
+        case 'start-random':
+          startRandomTrial(targetEl.dataset.keepInfluence === 'true');
+          break;
+        case 'start-by-index': {
+          const parsedIdx = Number.parseInt(targetEl.dataset.index || '', 10);
+          startTrialByIndex(parsedIdx);
+          break;
+        }
+        case 'select-kotodama':
+          selectKotodama(targetEl.dataset.id || '');
+          break;
+        case 'fire-ronpa':
+          fireRonpa();
+          break;
+        default:
+          break;
+      }
+    }
 
-    // 直ちに描画
-    render();
+    const appRoot = document.getElementById('app');
+    if (appRoot) {
+      appRoot.addEventListener('click', (event) => {
+        const targetEl = event.target instanceof Element ? event.target.closest('[data-action]') : null;
+        if (targetEl) {
+          handleActionElement(targetEl);
+        }
+      });
+
+      appRoot.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const targetEl = event.target instanceof Element ? event.target.closest('[data-action]') : null;
+        if (targetEl && targetEl.tagName !== 'BUTTON') {
+          event.preventDefault();
+          handleActionElement(targetEl);
+        }
+      });
+    }
+
+    // 初回初期化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        render();
+      }, { once: true });
+    } else {
+      render();
+    }
+    })();
   </script>
 </body>
 </html>

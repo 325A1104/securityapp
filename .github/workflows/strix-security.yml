@@ -1,0 +1,33 @@
+name: Strix AI Security Penetration Test
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  strix-security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Strix CLI (usestrix/strix)
+        run: curl -sSL https://strix.ai/install | bash
+
+      - name: Run Strix Penetration Test
+        env:
+          STRIX_LLM: ${{ vars.STRIX_LLM || 'openai/gpt-4o' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          if [ -z "$LLM_API_KEY" ]; then
+            echo "LLM_API_KEY secret is not configured. Skipping Strix scan."
+            exit 0
+          fi
+          strix -n --target ./
